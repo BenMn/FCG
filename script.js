@@ -703,7 +703,7 @@ function renderSelection() {
       <div class="selection-box">
         <div class="selection-box-heading">
           <strong>Notes</strong>
-          <span class="average-rating">Moy. ${averageRatingOutOf10(selected.ratings)}/10</span>
+          <span class="average-rating">${averageRatingOutOf10(selected.ratings)}</span>
         </div>
         <div class="rating-summary">${renderRatingSummary(selected.ratings)}</div>
       </div>
@@ -1360,7 +1360,8 @@ function averageRatingOutOf10(ratings) {
   const normalizedRatings = normalizeRatings(ratings);
   const total = TRAINING_CRITERIA.reduce((sum, criterion) => sum + normalizedRatings[criterion.id], 0);
   const averageOutOf10 = (total / TRAINING_CRITERIA.length) * 2;
-  return Number.isInteger(averageOutOf10) ? String(averageOutOf10) : averageOutOf10.toFixed(1);
+  const formattedAverage = Number.isInteger(averageOutOf10) ? String(averageOutOf10) : averageOutOf10.toFixed(1);
+  return formattedAverage.replace(".", ",");
 }
 
 function sanitizeLineups(lineups) {

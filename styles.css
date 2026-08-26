@@ -654,12 +654,16 @@ select {
 
 .average-rating {
   flex: 0 0 auto;
-  border-radius: 999px;
-  padding: 4px 8px;
-  background: #fff;
-  color: var(--green-dark);
-  font-size: 0.76rem;
+  min-width: 48px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--green-dark);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(31, 110, 67, 0.24);
+  font-size: 1.05rem;
   font-weight: 950;
+  line-height: 1;
+  text-align: center;
 }
 
 .selection-badges {
