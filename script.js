@@ -253,6 +253,52 @@ const DEFAULT_PLAYERS = [
   { id: makeId(), name: "Flo", positions: ["BU", "AD"], ratings: defaultRatings() },
 ];
 
+const DEFAULT_SESSIONS = [
+  {
+    id: makeId(),
+    name: "Séance 1 - Contrôle, passe et disponibilité",
+    createdAt: new Date().toISOString(),
+    exercises: [
+      {
+        id: makeId(),
+        name: "Échauffement avec ballon",
+        duration: 8,
+        objective: "technique",
+      },
+      {
+        id: makeId(),
+        name: "Passe / contrôle orienté par 2",
+        duration: 12,
+        objective: "technique",
+      },
+      {
+        id: makeId(),
+        name: "Triangle : passe et suis ta passe",
+        duration: 12,
+        objective: "technique",
+      },
+      {
+        id: makeId(),
+        name: "Conservation 5v2 / 6v2",
+        duration: 11,
+        objective: "jeu",
+      },
+      {
+        id: makeId(),
+        name: "Opposition - 1re mi-temps",
+        duration: 30,
+        objective: "jeu",
+      },
+      {
+        id: makeId(),
+        name: "Opposition - 2e mi-temps",
+        duration: 30,
+        objective: "jeu",
+      },
+    ],
+  },
+];
+
 const state = loadState();
 let selectedPlayerId = null;
 let draggedPlayerId = null;
@@ -316,8 +362,9 @@ function loadState() {
     teamSize: "11",
     formation: "4-4-2",
     lineups: {},
-    sessions: [],
+    sessions: DEFAULT_SESSIONS,
     activeView: "lineup",
+    defaultTrainingSeeded: true,
   };
 
   try {
@@ -330,14 +377,17 @@ function loadState() {
     const formation = getBaseFormations(teamSize)[parsedFormation]
       ? parsedFormation
       : TEAM_FORMATS[teamSize].defaultFormation;
+    const sessions = Array.isArray(parsed.sessions) ? sanitizeSessions(parsed.sessions) : [];
+    const seededSessions = parsed.defaultTrainingSeeded === true ? sessions : seedDefaultSessions(sessions);
 
     return {
       players: sanitizePlayers(parsed.players, fallback.players),
       teamSize,
       formation,
       lineups: sanitizeLineups(parsed.lineups),
-      sessions: sanitizeSessions(parsed.sessions),
+      sessions: seededSessions,
       activeView: parsed.activeView === "training" ? "training" : fallback.activeView,
+      defaultTrainingSeeded: true,
     };
   } catch {
     return fallback;
@@ -1397,6 +1447,12 @@ function sanitizeSessions(sessions) {
       };
     })
     .filter((session) => session.exercises.length);
+}
+
+function seedDefaultSessions(sessions) {
+  const existingSessionNames = new Set(sessions.map((session) => session.name));
+  const missingDefaultSessions = DEFAULT_SESSIONS.filter((session) => !existingSessionNames.has(session.name));
+  return [...missingDefaultSessions, ...sessions];
 }
 
 function sanitizeExercises(exercises) {
