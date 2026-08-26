@@ -22,6 +22,8 @@ const TRAINING_CRITERIA = [
 ];
 
 const DEFAULT_RATING = 3;
+const TRAINING_SESSION_TARGET_MINUTES = 105;
+const DEFAULT_TRAINING_SEED_VERSION = 2;
 
 const FORMATIONS = {
   "4-2-3-1": [
@@ -255,64 +257,268 @@ const DEFAULT_PLAYERS = [
 
 const DEFAULT_EXERCISE_LIBRARY = [
   {
-    id: "echauffement-ballon",
-    name: "Échauffement avec ballon",
+    id: "conduite-libre-consignes",
+    name: "Conduite libre + consignes",
     defaultDuration: 8,
+    players: "Tous",
     objective: "technique",
-    description: "Zone de 25 x 25 m, idéalement avec 1 ballon par joueur. Pendant 4 min, conduite libre avec intérieur/extérieur, changements de direction, pied faible et consignes annoncées toutes les 20 à 30 s. Puis 4 min par deux avec passes courtes en mouvement : après chaque passe, le joueur doit se déplacer pour redevenir disponible.",
-    diagram: "Zone 25 x 25 m\n\n+----------------+\n| o  o  o  o  o |\n|   conduite    |\n| o  o  o  o  o |\n+----------------+\n\nPuis par deux : A <-> B en mouvement",
+    warmup: "yes",
+    description: "Un ballon par joueur dans un carré de 20 à 25 m. Les joueurs conduisent librement, puis l'entraîneur annonce des consignes courtes : pied droit, pied gauche, intérieur/extérieur, semelle, changement de direction, accélération après conduite, arrêt du ballon. Terminer par une contrainte de prise d'information : l'entraîneur montre un nombre avec les doigts et les joueurs doivent l'annoncer sans arrêter leur conduite.",
+    diagram: "+----------------+\n| o  o   o   o  |\n|    conduite   |\n| o    o   o    |\n|   coach: 3    |\n+----------------+",
     coachingPoints: [
-      "Lever la tête avant de recevoir ou conduire.",
-      "Garder le ballon proche du pied.",
+      "Multiplier les petits contacts plutôt que pousser le ballon trop loin.",
+      "Changer de rythme après chaque changement de direction.",
+      "Lever la tête régulièrement, même quand la consigne technique est simple.",
+    ],
+  },
+  {
+    id: "passe-par-deux-mouvement",
+    name: "Passe par deux en mouvement",
+    defaultDuration: 8,
+    players: "2",
+    objective: "technique",
+    warmup: "yes",
+    description: "Par deux avec un ballon, dans une zone libre. Les joueurs se déplacent en permanence et se font des passes au sol. Après chaque passe, le joueur doit changer d'angle ou de ligne de course pour redevenir disponible. Ajouter progressivement : deux touches maximum, pied faible, contrôle orienté obligatoire, puis passe après prise d'information.",
+    diagram: "A o  ---- passe ---->  o B\n  \\                 /\n   \\ déplacement   /\n    o <---------- o",
+    coachingPoints: [
       "Passer puis bouger immédiatement.",
+      "Recevoir corps ouvert pour jouer dans la course.",
+      "Adapter la force de passe à la distance et au déplacement du partenaire.",
     ],
   },
   {
-    id: "passe-controle-oriente",
-    name: "Passe / contrôle orienté par 2",
-    defaultDuration: 12,
+    id: "passe-et-suit-triangle",
+    name: "Passe et suit en triangle",
+    defaultDuration: 10,
+    players: "3-6",
     objective: "technique",
-    description: "Par groupes de deux, espacés de 8 à 10 m. Chaque joueur a une petite porte de deux plots devant lui. Le receveur prend l'information avant la passe, reçoit à côté de la porte, oriente son contrôle pour faire passer le ballon de l'autre côté, puis transmet. Après quelques minutes, passer en 2 touches maximum si la qualité reste bonne.",
-    diagram: "A        | |  -------->  | |        B\n         porte           porte\n\nB contrôle d'un côté de la porte,\npuis rejoue de l'autre côté.",
+    warmup: "yes",
+    description: "Trois plots en triangle, 10 à 12 m entre chaque plot. A passe à B puis suit sa passe et prend la place de B. B contrôle orienté vers C, passe à C puis prend sa place. C rejoue vers A. Ajouter un deuxième ballon si le rythme est bon, ou limiter à deux touches pour travailler contrôle puis passe.",
+    diagram: "          B o\n         / \\\n        /   \\\n       /     \\\n   A o ------- o C\n\nPasse puis suis ta passe.",
     coachingPoints: [
-      "Corps ouvert avant la réception.",
-      "Premier contrôle qui prépare la passe suivante.",
-      "Passe au sol appuyée, cheville ferme.",
-      "Travailler les deux pieds.",
+      "Regarder la prochaine cible avant de recevoir.",
+      "Orienter le premier contrôle vers le plot suivant.",
+      "Accélérer sur le déplacement après la passe.",
     ],
   },
   {
-    id: "triangle-passe-suis",
-    name: "Triangle : passe et suis ta passe",
-    defaultDuration: 12,
+    id: "carre-passe-suit",
+    name: "Carré passe et suit",
+    defaultDuration: 10,
+    players: "5-8",
     objective: "technique",
-    description: "Groupes de 4 à 5 joueurs sur un triangle de 10 à 12 m entre les plots. A passe à B et prend sa place. B contrôle orienté vers C, passe à C puis prend sa place. C joue vers A, et ainsi de suite. Progression : 2 touches maximum, puis contrôle avec le pied opposé à l'origine de la passe pour ouvrir le corps.",
-    diagram: "          B\n         / \\\n        /   \\\n       /     \\\n      A ----- C\n\nPasse : A -> B\nCourse : A prend la place de B",
+    warmup: "yes",
+    description: "Quatre plots en carré de 10 à 12 m. Le ballon circule autour du carré : passe au joueur suivant, puis course pour suivre sa passe. Mettre deux joueurs au départ si le groupe est nombreux. Progression : contrôle orienté obligatoire, changement de sens au signal, puis un joueur fixe au centre pour jouer en appui-remise.",
+    diagram: "A o -------- o B\n  |          |\n  |          |\nD o -------- o C\n\nPasse vers le plot suivant,\npuis déplacement.",
     coachingPoints: [
-      "Regarder avant de recevoir.",
-      "Orienter le contrôle vers la prochaine solution.",
-      "Accélérer après la passe pour occuper la place suivante.",
+      "Prendre l'information avant la réception.",
+      "Préparer le pied d'appui avant de jouer.",
+      "Garder un tempo régulier, sans attendre le ballon arrêté.",
     ],
   },
   {
-    id: "conservation-5v2-6v2",
-    name: "Conservation 5v2 / 6v2",
-    defaultDuration: 11,
+    id: "portes-passes",
+    name: "Portes de passes",
+    defaultDuration: 8,
+    players: "2-3",
+    objective: "technique",
+    warmup: "yes",
+    description: "Disperser beaucoup de petites portes avec deux coupelles. Par deux avec un ballon, A doit passer à B à travers une porte pour marquer un point. Les deux joueurs cherchent immédiatement une nouvelle porte après chaque passe. Interdire d'utiliser deux fois de suite la même porte. Variante : pied faible uniquement ou contrôle obligatoire avant passe.",
+    diagram: "  | |                 | |\n\n        A o ---> o B\n\n| |                       | |\n\n            | |",
+    coachingPoints: [
+      "Lever la tête pour choisir la porte suivante.",
+      "Soigner la précision de passe au sol.",
+      "Se déplacer dès que le ballon quitte le pied.",
+    ],
+  },
+  {
+    id: "rondo-4v1-5v2",
+    name: "Rondo 4v1 / 5v2",
+    defaultDuration: 10,
+    players: "5-7",
     objective: "jeu",
-    description: "Carré d'environ 12 x 12 m pour un 5v2, à agrandir si le niveau le demande. Les joueurs extérieurs conservent le ballon face à deux défenseurs. D'abord touches libres, puis 3 touches, puis éventuellement 2 touches pour les plus à l'aise. Changer les défenseurs après récupération ou toutes les 45 à 60 s. Challenge possible : 8 passes consécutives = 1 point.",
-    diagram: "+----------------+\n| o          o   |\n|      x  x      |\n| o          o   |\n|       o        |\n+----------------+\n\n5 contre 2 dans le carré",
+    warmup: "after-activation",
+    description: "Carré de 10 à 14 m selon le niveau. Les joueurs extérieurs conservent le ballon face à un ou deux défenseurs. Commencer sans limite de touches, puis passer à 3 touches si le rythme est bon. Changer les défenseurs après récupération ou toutes les 45 à 60 s. Challenge possible : 8 passes consécutives = 1 point.",
+    diagram: "+----------------+\n| o          o   |\n|      x  x      |\n| o          o   |\n|       o        |\n+----------------+\n\n4v1 ou 5v2 selon l'effectif.",
     coachingPoints: [
-      "Scanner avant réception.",
-      "Contrôler loin du défenseur.",
+      "Scanner avant la réception.",
       "Créer un angle de passe après avoir joué.",
-      "Ne pas rester spectateur de sa passe.",
+      "Contrôler loin du défenseur.",
+      "Ne pas imposer deux touches trop tôt si le groupe est hétérogène.",
+    ],
+  },
+  {
+    id: "toro-changement-zone",
+    name: "Toro avec changement de zone",
+    defaultDuration: 12,
+    players: "6-10",
+    objective: "jeu",
+    warmup: "no",
+    description: "Créer deux carrés voisins. L'équipe en possession conserve dans une zone face aux défenseurs. Après un nombre de passes défini, elle doit trouver une passe vers la deuxième zone et tout le bloc se déplace. Les défenseurs cherchent à récupérer puis à ressortir vite vers l'autre zone.",
+    diagram: "+----------+  +----------+\n| o  o  x  |  |          |\n|    o     |--|--> zone 2|\n| o     x  |  |          |\n+----------+  +----------+",
+    coachingPoints: [
+      "Voir avant de jouer vers l'avant.",
+      "Changer de zone au bon moment, pas par obligation.",
+      "Se replacer vite après la passe de sortie.",
+    ],
+  },
+  {
+    id: "conservation-4v4-jokers",
+    name: "Conservation 4v4 + jokers",
+    defaultDuration: 12,
+    players: "8-12",
+    objective: "jeu",
+    warmup: "no",
+    description: "Dans un rectangle adapté au nombre de joueurs, faire jouer 4v4 avec deux jokers qui jouent toujours avec l'équipe en possession. L'équipe avec le ballon est donc en supériorité. Objectif : conserver, se rendre disponible, créer des lignes de passe et changer de côté quand une zone est fermée.",
+    diagram: "+----------------------+\n|        J jaune       |\n| bleu  rouge  bleu    |\n| rouge bleu  rouge    |\n|        J jaune       |\n+----------------------+",
+    coachingPoints: [
+      "Quand je n'ai pas le ballon, je dois offrir une solution.",
+      "Écarter le jeu pour agrandir l'espace.",
+      "Utiliser les jokers pour ressortir de la pression.",
+    ],
+  },
+  {
+    id: "jeu-3-zones",
+    name: "Jeu des 3 zones",
+    defaultDuration: 14,
+    players: "9-15",
+    objective: "jeu",
+    warmup: "no",
+    description: "Diviser le terrain en trois zones horizontales. L'équipe doit construire depuis la première zone, trouver un relais dans la zone centrale, puis progresser vers la zone offensive. Adapter les règles : obligation de passer par chaque zone, joker central, ou point bonus si la progression se fait au sol.",
+    diagram: "+----------------------+\n| Zone offensive       |\n+----------------------+\n| Zone centrale        |\n+----------------------+\n| Zone de relance      |\n+----------------------+",
+    coachingPoints: [
+      "Respecter les distances entre les lignes.",
+      "Se rendre visible entre deux adversaires.",
+      "Avancer quand c'est possible, conserver quand c'est nécessaire.",
+    ],
+  },
+  {
+    id: "deux-vs-un-but",
+    name: "2v1 vers le but",
+    defaultDuration: 12,
+    players: "6+",
+    objective: "jeu",
+    warmup: "no",
+    description: "Deux attaquants partent vers le but contre un défenseur. Le porteur doit lire le comportement du défenseur : s'il attaque le porteur, passe au partenaire ; s'il protège la passe, conduite puis finition. Faire tourner les rôles rapidement pour garder de l'intensité.",
+    diagram: "A o balle  -------->\n\n           x défenseur     [but]\n\nB o        -------->",
+    coachingPoints: [
+      "Fixer le défenseur avant de donner.",
+      "S'écarter pour offrir une vraie ligne de passe.",
+      "Finir l'action rapidement après le choix.",
+    ],
+  },
+  {
+    id: "trois-vs-deux-but",
+    name: "3v2 vers le but",
+    defaultDuration: 12,
+    players: "8+",
+    objective: "jeu",
+    warmup: "no",
+    description: "Trois attaquants attaquent deux défenseurs vers le but. Démarrer depuis une zone centrale ou après récupération simulée. L'objectif est de profiter du surnombre sans se précipiter : largeur, porteur fixé, soutien disponible, puis finition.",
+    diagram: "A o ---->\n     B o balle ---->    x   x    [but]\nC o ---->",
+    coachingPoints: [
+      "Donner de la largeur pour ouvrir l'axe.",
+      "Fixer un défenseur avant de libérer le ballon.",
+      "Garder un joueur en soutien si la passe vers l'avant est fermée.",
+    ],
+  },
+  {
+    id: "un-vs-un-couloir",
+    name: "1v1 couloir",
+    defaultDuration: 10,
+    players: "6+",
+    objective: "technique",
+    warmup: "after-activation",
+    description: "Installer un couloir de 8 à 12 m de large avec une porte ou un mini-but au bout. L'attaquant démarre balle au pied et doit éliminer le défenseur pour franchir la ligne ou marquer. Faire tourner vite, avec des passages courts. Variante : défenseur passif au départ, puis actif.",
+    diagram: "+----------------+\n| A o balle      |\n|        x       |\n|            | | |\n+----------------+",
+    coachingPoints: [
+      "Changer de rythme au moment du dribble.",
+      "Protéger le ballon avec le corps.",
+      "Pour le défenseur : freiner, orienter, ne pas se jeter.",
+    ],
+  },
+  {
+    id: "passe-remise-frappe",
+    name: "Passe-remise-frappe",
+    defaultDuration: 12,
+    players: "6+",
+    objective: "technique",
+    warmup: "no",
+    description: "A joue dans les pieds de B. B remet en une touche dans la course de A. A arrive lancé et frappe. Puis A devient B et B va à la file. Ajouter un défenseur semi-actif ou varier les angles de remise quand le geste est maîtrisé.",
+    diagram: "        B o\n       <- remise\nA o balle ------> B\n  -------------> [but]\n       frappe",
+    coachingPoints: [
+      "Passe dans le bon pied de l'appui.",
+      "Remise dosée dans la course, pas dans les pieds.",
+      "Arriver équilibré pour frapper.",
+    ],
+  },
+  {
+    id: "centre-finition",
+    name: "Centre + finition",
+    defaultDuration: 12,
+    players: "8+",
+    objective: "technique",
+    warmup: "no",
+    description: "Deux files sur les côtés et une ou deux files d'attaquants dans l'axe. Le joueur de côté conduit puis centre. Les attaquants attaquent des zones différentes : premier poteau, point de penalty, deuxième poteau. Alterner côté droit et gauche.",
+    diagram: "côté o ---- centre ----> [surface]\n                         A o  B o\n                         [but]",
+    coachingPoints: [
+      "Regarder avant de centrer.",
+      "Attaquer la zone avec conviction, pas attendre le ballon.",
+      "Varier centre fort au sol et centre aérien selon le niveau.",
+    ],
+  },
+  {
+    id: "finition-controle-oriente",
+    name: "Finition après contrôle orienté",
+    defaultDuration: 10,
+    players: "6+",
+    objective: "technique",
+    warmup: "no",
+    description: "Un passeur sert un joueur dos ou profil au but. Le receveur doit prendre son premier contrôle vers l'espace libre puis frapper en deux ou trois touches. Varier l'angle de passe, le pied de réception et la distance au but.",
+    diagram: "P o ---- passe ----> A o\n                       contrôle -> frappe\n                              [but]",
+    coachingPoints: [
+      "Premier contrôle hors de la pression imaginaire.",
+      "Orienter le corps avant la réception.",
+      "Enchaîner vite sans sacrifier la qualité de frappe.",
+    ],
+  },
+  {
+    id: "match-reduit-regle",
+    name: "Match réduit 4v4 / 5v5",
+    defaultDuration: 12,
+    players: "8-12",
+    objective: "jeu",
+    warmup: "no",
+    description: "Match réduit avec une seule règle liée au thème du jour : but double après 5 passes, but double après un une-deux, but valable après passage par un côté, but double en première intention, ou récupération en moins de 5 secondes = 1 point. Garder une règle simple pour ne pas couper le jeu.",
+    diagram: "+----------------------+\n| mini-but        mini |\n|  bleu   rouge        |\n| rouge   bleu         |\n| mini          mini-but|\n+----------------------+",
+    coachingPoints: [
+      "Choisir une seule contrainte claire.",
+      "Laisser jouer et corriger sur les arrêts naturels.",
+      "Relier la règle au thème travaillé juste avant.",
+    ],
+  },
+  {
+    id: "transition-hydratation-equipes",
+    name: "Transition eau + équipes",
+    defaultDuration: 3,
+    players: "Tous",
+    objective: "physique",
+    warmup: "no",
+    description: "Pause courte pour boire, souffler et composer les équipes avant l'opposition. Le cadre reste volontairement serré : 3 minutes maximum pour ne pas casser le rythme de la séance.",
+    diagram: "",
+    coachingPoints: [
+      "Annoncer les équipes avant la pause si possible.",
+      "Faire repartir tout le monde rapidement.",
+      "Garder l'intensité globale de la séance.",
     ],
   },
   {
     id: "opposition-premiere-mi-temps",
     name: "Opposition - 1re mi-temps",
     defaultDuration: 30,
+    players: "Tous",
     objective: "jeu",
+    warmup: "no",
     description: "Match de 30 min avec une règle bonus, sans bloquer le jeu : un but vaut 2 points si l'action comporte au moins 5 passes consécutives, sinon il vaut 1 point. L'objectif est d'encourager la disponibilité, le contrôle utile et la circulation sans imposer une contrainte artificielle à chaque situation.",
     diagram: "",
     coachingPoints: [
@@ -325,12 +531,14 @@ const DEFAULT_EXERCISE_LIBRARY = [
     id: "opposition-deuxieme-mi-temps",
     name: "Opposition - 2e mi-temps",
     defaultDuration: 30,
+    players: "Tous",
     objective: "jeu",
+    warmup: "no",
     description: "Match libre de 30 min. Observer si le travail technique ressort naturellement : regard avant réception, contrôle orienté vers la suite, mouvement après la passe. Limiter les interventions pour laisser le jeu vivre et ne faire que des rappels courts.",
     diagram: "",
     coachingPoints: [
       "Observer plus que corriger.",
-      "Repérer les contrôles qui font gagner du temps.",
+      "Repérer les comportements travaillés pendant la séance.",
       "Faire des remarques courtes et concrètes.",
     ],
   },
@@ -339,15 +547,44 @@ const DEFAULT_EXERCISE_LIBRARY = [
 const DEFAULT_SESSIONS = [
   {
     id: makeId(),
-    name: "Séance 1 - Contrôle, passe et disponibilité",
+    name: "Contrôle / passe",
     createdAt: new Date().toISOString(),
     exercises: [
-      exerciseFromLibrary("echauffement-ballon"),
-      exerciseFromLibrary("passe-controle-oriente"),
-      exerciseFromLibrary("triangle-passe-suis"),
-      exerciseFromLibrary("conservation-5v2-6v2"),
-      exerciseFromLibrary("opposition-premiere-mi-temps"),
-      exerciseFromLibrary("opposition-deuxieme-mi-temps"),
+      exerciseFromLibrary("portes-passes", 8),
+      exerciseFromLibrary("passe-et-suit-triangle", 10),
+      exerciseFromLibrary("rondo-4v1-5v2", 12),
+      exerciseFromLibrary("conservation-4v4-jokers", 12),
+      exerciseFromLibrary("transition-hydratation-equipes", 3),
+      exerciseFromLibrary("opposition-premiere-mi-temps", 30),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps", 30),
+    ],
+  },
+  {
+    id: makeId(),
+    name: "Duels / finition",
+    createdAt: new Date().toISOString(),
+    exercises: [
+      exerciseFromLibrary("conduite-libre-consignes", 8),
+      exerciseFromLibrary("un-vs-un-couloir", 10),
+      exerciseFromLibrary("deux-vs-un-but", 12),
+      exerciseFromLibrary("passe-remise-frappe", 12),
+      exerciseFromLibrary("transition-hydratation-equipes", 3),
+      exerciseFromLibrary("opposition-premiere-mi-temps", 30),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps", 30),
+    ],
+  },
+  {
+    id: makeId(),
+    name: "Jeu collectif / placement",
+    createdAt: new Date().toISOString(),
+    exercises: [
+      exerciseFromLibrary("passe-par-deux-mouvement", 8),
+      exerciseFromLibrary("rondo-4v1-5v2", 10),
+      exerciseFromLibrary("conservation-4v4-jokers", 12),
+      exerciseFromLibrary("match-reduit-regle", 12),
+      exerciseFromLibrary("transition-hydratation-equipes", 3),
+      exerciseFromLibrary("opposition-premiere-mi-temps", 30),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps", 30),
     ],
   },
 ];
@@ -360,6 +597,8 @@ let suppressNextCardClick = false;
 let isEditingSelectedPlayer = false;
 let pendingSlotIndex = null;
 let draftExercises = [];
+let editingExerciseId = null;
+let editingSessionId = null;
 
 const elements = {
   viewTabs: document.querySelectorAll("[data-view-tab]"),
@@ -374,6 +613,7 @@ const elements = {
   closePlayerModalButton: document.querySelector("#closePlayerModalButton"),
   playerModal: document.querySelector("#playerModal"),
   exerciseModal: document.querySelector("#exerciseModal"),
+  exerciseModalTitle: document.querySelector("#exerciseModalTitle"),
   closeExerciseModalButton: document.querySelector("#closeExerciseModalButton"),
   exerciseDetailModal: document.querySelector("#exerciseDetailModal"),
   closeExerciseDetailButton: document.querySelector("#closeExerciseDetailButton"),
@@ -396,13 +636,18 @@ const elements = {
   selectionDetails: document.querySelector("#selectionDetails"),
   sessionForm: document.querySelector("#sessionForm"),
   sessionName: document.querySelector("#sessionName"),
+  draftSessionSummary: document.querySelector("#draftSessionSummary"),
+  saveSessionButton: document.querySelector("#saveSessionButton"),
+  cancelSessionEditButton: document.querySelector("#cancelSessionEditButton"),
   exerciseForm: document.querySelector("#exerciseForm"),
   exerciseName: document.querySelector("#exerciseName"),
   exerciseDuration: document.querySelector("#exerciseDuration"),
   exerciseObjective: document.querySelector("#exerciseObjective"),
+  exerciseWarmup: document.querySelector("#exerciseWarmup"),
   exerciseDescription: document.querySelector("#exerciseDescription"),
   exerciseDiagram: document.querySelector("#exerciseDiagram"),
   exerciseCoachingPoints: document.querySelector("#exerciseCoachingPoints"),
+  saveExerciseButton: document.querySelector("#saveExerciseButton"),
   draftExercises: document.querySelector("#draftExercises"),
   exerciseLibrary: document.querySelector("#exerciseLibrary"),
   exerciseLibraryCount: document.querySelector("#exerciseLibraryCount"),
@@ -428,9 +673,11 @@ function loadState() {
     formation: "4-4-2",
     lineups: {},
     exerciseLibrary: DEFAULT_EXERCISE_LIBRARY,
+    deletedDefaultExerciseIds: [],
     sessions: DEFAULT_SESSIONS,
     activeView: "lineup",
     defaultTrainingSeeded: true,
+    defaultTrainingSeedVersion: DEFAULT_TRAINING_SEED_VERSION,
   };
 
   try {
@@ -443,9 +690,15 @@ function loadState() {
     const formation = getBaseFormations(teamSize)[parsedFormation]
       ? parsedFormation
       : TEAM_FORMATS[teamSize].defaultFormation;
-    const exerciseLibrary = seedDefaultExerciseLibrary(sanitizeExerciseLibrary(parsed.exerciseLibrary));
+    const trainingSeedVersion = Number(parsed.defaultTrainingSeedVersion || (parsed.defaultTrainingSeeded ? 1 : 0));
+    const deletedDefaultExerciseIds = sanitizeDeletedDefaultExerciseIds(parsed.deletedDefaultExerciseIds);
+    const exerciseLibrary = seedDefaultExerciseLibrary(
+      sanitizeExerciseLibrary(parsed.exerciseLibrary),
+      deletedDefaultExerciseIds,
+      trainingSeedVersion < DEFAULT_TRAINING_SEED_VERSION
+    );
     const sessions = Array.isArray(parsed.sessions) ? sanitizeSessions(parsed.sessions) : [];
-    const seededSessions = parsed.defaultTrainingSeeded === true ? sessions : seedDefaultSessions(sessions);
+    const seededSessions = trainingSeedVersion >= DEFAULT_TRAINING_SEED_VERSION ? sessions : seedDefaultSessions(sessions);
 
     return {
       players: sanitizePlayers(parsed.players, fallback.players),
@@ -453,9 +706,11 @@ function loadState() {
       formation,
       lineups: sanitizeLineups(parsed.lineups),
       exerciseLibrary,
+      deletedDefaultExerciseIds,
       sessions: seededSessions,
       activeView: parsed.activeView === "training" ? "training" : fallback.activeView,
       defaultTrainingSeeded: true,
+      defaultTrainingSeedVersion: DEFAULT_TRAINING_SEED_VERSION,
     };
   } catch {
     return fallback;
@@ -473,6 +728,7 @@ function bindEvents() {
   elements.playerForm.addEventListener("submit", addPlayer);
   elements.exerciseForm.addEventListener("submit", addExerciseToLibrary);
   elements.sessionForm.addEventListener("submit", createTrainingSession);
+  elements.cancelSessionEditButton.addEventListener("click", resetSessionDraft);
   elements.draftExercises.addEventListener("click", (event) => {
     const deleteButton = event.target.closest("[data-delete-draft-exercise]");
     if (!deleteButton) return;
@@ -486,15 +742,36 @@ function bindEvents() {
       return;
     }
 
+    const editButton = event.target.closest("[data-edit-library-exercise]");
+    if (editButton) {
+      openExerciseModal(editButton.dataset.editLibraryExercise);
+      return;
+    }
+
+    const deleteButton = event.target.closest("[data-delete-library-exercise]");
+    if (deleteButton) {
+      deleteLibraryExercise(deleteButton.dataset.deleteLibraryExercise);
+      return;
+    }
+
     const detailButton = event.target.closest("[data-show-library-exercise]");
     if (detailButton) {
       openExerciseDetail(detailButton.dataset.showLibraryExercise);
     }
   });
   elements.trainingSessions.addEventListener("click", (event) => {
+    const editButton = event.target.closest("[data-edit-session]");
+    if (editButton) {
+      editTrainingSession(editButton.dataset.editSession);
+      return;
+    }
+
     const deleteButton = event.target.closest("[data-delete-session]");
     if (!deleteButton) return;
     state.sessions = state.sessions.filter((session) => session.id !== deleteButton.dataset.deleteSession);
+    if (editingSessionId === deleteButton.dataset.deleteSession) {
+      resetSessionDraft();
+    }
     saveState();
     renderTraining();
   });
@@ -516,7 +793,7 @@ function bindEvents() {
     }
   });
   elements.openPlayerModalButton.addEventListener("click", openPlayerModal);
-  elements.openExerciseModalButton.addEventListener("click", openExerciseModal);
+  elements.openExerciseModalButton.addEventListener("click", () => openExerciseModal());
   elements.closePlayerModalButton.addEventListener("click", closePlayerModal);
   elements.closeExerciseModalButton.addEventListener("click", closeExerciseModal);
   elements.closeExerciseDetailButton.addEventListener("click", closeExerciseDetail);
@@ -651,7 +928,27 @@ function isPlayerModalOpen() {
   return elements.playerModal.classList.contains("is-open");
 }
 
-function openExerciseModal() {
+function openExerciseModal(exerciseId = null) {
+  editingExerciseId = exerciseId;
+  const exercise = editingExerciseId ? state.exerciseLibrary.find((item) => item.id === editingExerciseId) : null;
+
+  elements.exerciseModalTitle.textContent = exercise ? "Modifier l'exercice" : "Nouvel exercice";
+  elements.saveExerciseButton.textContent = exercise ? "Enregistrer" : "Ajouter";
+  elements.exerciseForm.reset();
+
+  if (exercise) {
+    elements.exerciseName.value = exercise.name;
+    elements.exerciseDuration.value = exercise.defaultDuration || exercise.duration;
+    elements.exerciseObjective.value = exercise.objective;
+    elements.exerciseWarmup.value = sanitizeWarmup(exercise.warmup);
+    elements.exerciseDescription.value = exercise.description;
+    elements.exerciseDiagram.value = exercise.diagram || "";
+    elements.exerciseCoachingPoints.value = (exercise.coachingPoints || []).join("\n");
+  } else {
+    elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
+    elements.exerciseWarmup.value = "no";
+  }
+
   elements.exerciseModal.classList.add("is-open");
   elements.exerciseModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
@@ -663,7 +960,11 @@ function closeExerciseModal() {
   elements.exerciseModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
   elements.exerciseForm.reset();
+  editingExerciseId = null;
+  elements.exerciseModalTitle.textContent = "Nouvel exercice";
+  elements.saveExerciseButton.textContent = "Ajouter";
   elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
+  elements.exerciseWarmup.value = "no";
   elements.openExerciseModalButton.focus();
 }
 
@@ -680,6 +981,7 @@ function openExerciseDetail(exerciseId) {
     <div class="exercise-detail-modal-meta">
       <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
       <strong>${exercise.defaultDuration || exercise.duration} min</strong>
+      ${warmupBadgeHtml(exercise, true)}
     </div>
     ${exerciseDetailHtml(exercise)}
   `;
@@ -1059,6 +1361,7 @@ function addExerciseToLibrary(event) {
   const name = elements.exerciseName.value.trim();
   const duration = Number(elements.exerciseDuration.value);
   const objective = elements.exerciseObjective.value;
+  const warmup = sanitizeWarmup(elements.exerciseWarmup.value);
   const description = elements.exerciseDescription.value.trim();
   const diagram = elements.exerciseDiagram.value.trim();
   const coachingPoints = elements.exerciseCoachingPoints.value
@@ -1070,18 +1373,42 @@ function addExerciseToLibrary(event) {
     return;
   }
 
-  state.exerciseLibrary.unshift({
-    id: makeId(),
+  const currentExercise = editingExerciseId
+    ? state.exerciseLibrary.find((exercise) => exercise.id === editingExerciseId)
+    : null;
+  const savedExercise = {
+    id: editingExerciseId || makeId(),
     name,
     defaultDuration: Math.round(duration),
     duration: Math.round(duration),
+    players: currentExercise?.players || "",
     objective,
+    warmup,
     description,
     diagram,
     coachingPoints,
-  });
+  };
+
+  if (editingExerciseId) {
+    state.exerciseLibrary = state.exerciseLibrary.map((exercise) => {
+      return exercise.id === editingExerciseId ? savedExercise : exercise;
+    });
+  } else {
+    state.exerciseLibrary.unshift(savedExercise);
+  }
 
   closeExerciseModal();
+  saveState();
+  renderTraining();
+}
+
+function deleteLibraryExercise(exerciseId) {
+  state.exerciseLibrary = state.exerciseLibrary.filter((exercise) => exercise.id !== exerciseId);
+
+  if (DEFAULT_EXERCISE_LIBRARY.some((exercise) => exercise.id === exerciseId)) {
+    state.deletedDefaultExerciseIds = [...new Set([...(state.deletedDefaultExerciseIds || []), exerciseId])];
+  }
+
   saveState();
   renderTraining();
 }
@@ -1098,20 +1425,50 @@ function createTrainingSession(event) {
   event.preventDefault();
 
   const name = elements.sessionName.value.trim();
-  if (!name || !draftExercises.length) {
+  if (!name || !draftExercises.length || draftDuration() !== TRAINING_SESSION_TARGET_MINUTES) {
     return;
   }
 
-  state.sessions.unshift({
-    id: makeId(),
+  const savedSession = {
+    id: editingSessionId || makeId(),
     name,
-    createdAt: new Date().toISOString(),
+    createdAt: editingSessionId
+      ? state.sessions.find((session) => session.id === editingSessionId)?.createdAt || new Date().toISOString()
+      : new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     exercises: draftExercises.map((exercise) => ({ ...exercise })),
-  });
+  };
 
+  if (editingSessionId) {
+    state.sessions = state.sessions.map((session) => {
+      return session.id === editingSessionId ? savedSession : session;
+    });
+  } else {
+    state.sessions.unshift(savedSession);
+  }
+
+  resetSessionDraft();
+  saveState();
+  renderTraining();
+}
+
+function editTrainingSession(sessionId) {
+  const session = state.sessions.find((item) => item.id === sessionId);
+  if (!session) return;
+
+  editingSessionId = session.id;
+  elements.sessionName.value = session.name;
+  draftExercises = session.exercises.map((exercise) => ({ ...exercise, id: makeId() }));
+  state.activeView = "training";
+  saveState();
+  render();
+  elements.sessionName.focus();
+}
+
+function resetSessionDraft() {
+  editingSessionId = null;
   draftExercises = [];
   elements.sessionForm.reset();
-  elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
   saveState();
   renderTraining();
 }
@@ -1158,6 +1515,22 @@ function renderExerciseLibrary() {
 
 function renderDraftExercises() {
   elements.draftExercises.innerHTML = "";
+  const totalDuration = draftDuration();
+  const missingDuration = TRAINING_SESSION_TARGET_MINUTES - totalDuration;
+  const isExactDuration = missingDuration === 0;
+
+  elements.draftSessionSummary.innerHTML = `
+    <div>
+      <strong>${formatDuration(totalDuration)}</strong>
+      <span>sur ${formatDuration(TRAINING_SESSION_TARGET_MINUTES)}</span>
+    </div>
+    <em class="${isExactDuration ? "is-valid" : "is-warning"}">
+      ${isExactDuration ? "Durée OK" : missingDuration > 0 ? `Encore ${missingDuration} min` : `${Math.abs(missingDuration)} min en trop`}
+    </em>
+  `;
+  elements.saveSessionButton.textContent = editingSessionId ? "Enregistrer la séance" : "Créer la séance";
+  elements.saveSessionButton.disabled = !draftExercises.length || !isExactDuration;
+  elements.cancelSessionEditButton.classList.toggle("is-visible", Boolean(editingSessionId));
 
   if (!draftExercises.length) {
     const empty = document.createElement("p");
@@ -1170,6 +1543,21 @@ function renderDraftExercises() {
   draftExercises.forEach((exercise) => {
     elements.draftExercises.append(createExerciseRow(exercise, "draft"));
   });
+}
+
+function draftDuration() {
+  return draftExercises.reduce((total, exercise) => total + exercise.duration, 0);
+}
+
+function formatDuration(duration) {
+  const hours = Math.floor(duration / 60);
+  const minutes = duration % 60;
+
+  if (!hours) {
+    return `${minutes} min`;
+  }
+
+  return minutes ? `${hours}h${String(minutes).padStart(2, "0")}` : `${hours}h`;
 }
 
 function renderTrainingSessions() {
@@ -1186,15 +1574,21 @@ function renderTrainingSessions() {
 
   state.sessions.forEach((session) => {
     const totalDuration = session.exercises.reduce((total, exercise) => total + exercise.duration, 0);
+    const durationIsValid = totalDuration === TRAINING_SESSION_TARGET_MINUTES;
     const article = document.createElement("article");
     article.className = "training-session-card";
     article.innerHTML = `
       <div class="training-session-heading">
         <div>
           <h3>${escapeHtml(session.name)}</h3>
-          <p>${session.exercises.length} exercice${session.exercises.length > 1 ? "s" : ""} · ${totalDuration} min</p>
+          <p>${session.exercises.length} exercice${session.exercises.length > 1 ? "s" : ""} · ${formatDuration(totalDuration)} <span class="duration-status ${durationIsValid ? "is-valid" : "is-warning"}">${durationIsValid ? "1h45" : "À ajuster"}</span></p>
         </div>
-        <button class="icon-button session-delete-button" type="button" title="Supprimer la séance" aria-label="Supprimer la séance" data-delete-session="${session.id}">×</button>
+        <div class="session-card-actions">
+          <button class="icon-button session-edit-button" type="button" title="Modifier la séance" aria-label="Modifier la séance" data-edit-session="${session.id}">
+            <span aria-hidden="true">✎</span>
+          </button>
+          <button class="icon-button session-delete-button" type="button" title="Supprimer la séance" aria-label="Supprimer la séance" data-delete-session="${session.id}">×</button>
+        </div>
       </div>
       <div class="exercise-list">
         ${session.exercises.map((exercise) => exerciseRowHtml(exercise)).join("")}
@@ -1211,13 +1605,20 @@ function createLibraryExerciseCard(exercise) {
       <div class="library-exercise-heading">
         <div>
           <h3>${escapeHtml(exercise.name)}</h3>
-          <p>${exercise.defaultDuration || exercise.duration} min</p>
+          <p>${exercise.defaultDuration || exercise.duration} min${exercise.players ? ` · ${escapeHtml(exercise.players)}` : ""}</p>
         </div>
         <button class="icon-button exercise-view-button" type="button" title="Voir le détail" aria-label="Voir le détail de ${escapeHtml(exercise.name)}" data-show-library-exercise="${exercise.id}">
           <span class="eye-icon" aria-hidden="true"></span>
         </button>
       </div>
-      <button class="secondary-button" type="button" data-add-library-exercise="${exercise.id}">Ajouter à la séance</button>
+      ${warmupBadgeHtml(exercise)}
+      <div class="library-exercise-actions">
+        <button class="secondary-button" type="button" data-add-library-exercise="${exercise.id}">Ajouter</button>
+        <button class="icon-button exercise-edit-button" type="button" title="Modifier l'exercice" aria-label="Modifier l'exercice ${escapeHtml(exercise.name)}" data-edit-library-exercise="${exercise.id}">
+          <span aria-hidden="true">✎</span>
+        </button>
+        <button class="icon-button exercise-delete-button" type="button" title="Supprimer l'exercice" aria-label="Supprimer l'exercice ${escapeHtml(exercise.name)}" data-delete-library-exercise="${exercise.id}">×</button>
+      </div>
     </article>
   `.trim();
   return template.content.firstElementChild;
@@ -1235,7 +1636,7 @@ function exerciseRowHtml(exercise, canDelete = false) {
       <div class="exercise-row-heading">
         <div>
           <strong>${escapeHtml(exercise.name)}</strong>
-          <span>${exercise.duration} min</span>
+          <span>${exercise.duration} min${exercise.players ? ` · ${escapeHtml(exercise.players)}` : ""}</span>
         </div>
         <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
         ${canDelete ? `<button class="icon-button exercise-delete-button" type="button" title="Retirer l'exercice" aria-label="Retirer l'exercice" data-delete-draft-exercise="${exercise.id}">×</button>` : ""}
@@ -1244,11 +1645,27 @@ function exerciseRowHtml(exercise, canDelete = false) {
   `;
 }
 
+function warmupBadgeHtml(exercise, showText = false) {
+  const warmup = sanitizeWarmup(exercise.warmup);
+  if (warmup === "no") {
+    return "";
+  }
+
+  const label = getWarmupLabel(warmup);
+  return `
+    <span class="warmup-badge ${warmup === "after-activation" ? "is-conditional" : ""}" title="${label}" aria-label="${label}">
+      <span class="warmup-icon" aria-hidden="true"></span>
+      ${showText ? `<span>${label}</span>` : ""}
+    </span>
+  `;
+}
+
 function exerciseDetailHtml(exercise) {
   const coachingPoints = Array.isArray(exercise.coachingPoints) ? exercise.coachingPoints : [];
 
   return `
     <div class="exercise-detail">
+      ${exercise.players ? `<p><strong>Joueurs :</strong> ${escapeHtml(exercise.players)}</p>` : ""}
       <p>${escapeHtml(exercise.description || "Description à compléter.")}</p>
       ${exercise.diagram ? `<pre class="exercise-diagram">${escapeHtml(exercise.diagram)}</pre>` : ""}
       ${coachingPoints.length ? `
@@ -1677,14 +2094,35 @@ function sanitizeSessions(sessions) {
   return sessions
     .filter((session) => session && typeof session === "object" && typeof session.name === "string")
     .map((session) => {
-      return {
+      return normalizeSession({
         id: typeof session.id === "string" ? session.id : makeId(),
         name: session.name.trim() || "Séance",
         createdAt: typeof session.createdAt === "string" ? session.createdAt : new Date().toISOString(),
+        updatedAt: typeof session.updatedAt === "string" ? session.updatedAt : "",
         exercises: sanitizeExercises(session.exercises),
-      };
+      });
     })
     .filter((session) => session.exercises.length);
+}
+
+function normalizeSession(session) {
+  if (session.name !== "Séance 1 - Contrôle, passe et disponibilité") {
+    return session;
+  }
+
+  const hasTransition = session.exercises.some((exercise) => {
+    return exercise.libraryId === "transition-hydratation-equipes" || exercise.name === "Transition eau + équipes";
+  });
+
+  if (hasTransition) {
+    return session;
+  }
+
+  const transition = exerciseFromLibrary("transition-hydratation-equipes");
+  const firstOppositionIndex = session.exercises.findIndex((exercise) => exercise.name.startsWith("Opposition"));
+  const insertIndex = firstOppositionIndex === -1 ? session.exercises.length : firstOppositionIndex;
+  session.exercises.splice(insertIndex, 0, transition);
+  return session;
 }
 
 function seedDefaultSessions(sessions) {
@@ -1704,14 +2142,24 @@ function sanitizeExerciseLibrary(exercises) {
     .filter((exercise) => exercise.description);
 }
 
-function seedDefaultExerciseLibrary(exercises) {
+function seedDefaultExerciseLibrary(exercises, deletedDefaultExerciseIds = []) {
   const existingIds = new Set(exercises.map((exercise) => exercise.id));
   const existingNames = new Set(exercises.map((exercise) => exercise.name));
+  const deletedIds = new Set(deletedDefaultExerciseIds);
   const missingDefaultExercises = DEFAULT_EXERCISE_LIBRARY.filter((exercise) => {
-    return !existingIds.has(exercise.id) && !existingNames.has(exercise.name);
+    return !deletedIds.has(exercise.id) && !existingIds.has(exercise.id) && !existingNames.has(exercise.name);
   });
 
   return [...missingDefaultExercises, ...exercises];
+}
+
+function sanitizeDeletedDefaultExerciseIds(exerciseIds) {
+  if (!Array.isArray(exerciseIds)) {
+    return [];
+  }
+
+  const defaultExerciseIds = new Set(DEFAULT_EXERCISE_LIBRARY.map((exercise) => exercise.id));
+  return [...new Set(exerciseIds.filter((exerciseId) => defaultExerciseIds.has(exerciseId)))];
 }
 
 function sanitizeExercises(exercises) {
@@ -1734,7 +2182,9 @@ function sanitizeExercise(exercise) {
     name: (exercise.name || libraryExercise?.name || "Exercice").trim(),
     duration: Math.min(180, Math.max(1, Math.round(duration || 1))),
     defaultDuration: Math.min(180, Math.max(1, Math.round(Number(exercise.defaultDuration ?? duration ?? 1)))),
+    players: typeof exercise.players === "string" ? exercise.players.trim() : libraryExercise?.players || "",
     objective: getCriterion(exercise.objective)?.id || libraryExercise?.objective || TRAINING_CRITERIA[0].id,
+    warmup: sanitizeWarmup(exercise.warmup ?? libraryExercise?.warmup),
     description: (typeof exercise.description === "string" && exercise.description.trim())
       ? exercise.description.trim()
       : libraryExercise?.description || "",
@@ -1750,18 +2200,21 @@ function normalizeCoachingPoints(points, fallbackPoints = []) {
     .map((point) => point.trim());
 }
 
-function exerciseFromLibrary(exerciseId) {
+function exerciseFromLibrary(exerciseId, durationOverride = null) {
   const exercise = DEFAULT_EXERCISE_LIBRARY.find((item) => item.id === exerciseId);
-  return exerciseFromTemplate(exercise);
+  return exerciseFromTemplate(exercise, durationOverride);
 }
 
-function exerciseFromTemplate(exercise) {
+function exerciseFromTemplate(exercise, durationOverride = null) {
+  const duration = Number(durationOverride);
   return {
     id: makeId(),
     libraryId: exercise.id,
     name: exercise.name,
-    duration: exercise.defaultDuration || exercise.duration,
+    duration: Number.isFinite(duration) && duration > 0 ? Math.round(duration) : exercise.defaultDuration || exercise.duration,
+    players: exercise.players || "",
     objective: exercise.objective,
+    warmup: sanitizeWarmup(exercise.warmup),
     description: exercise.description,
     diagram: exercise.diagram || "",
     coachingPoints: [...(exercise.coachingPoints || [])],
@@ -1780,6 +2233,14 @@ function getCriterion(criterionId) {
 
 function getCriterionLabel(criterionId) {
   return getCriterion(criterionId)?.label || TRAINING_CRITERIA[0].label;
+}
+
+function sanitizeWarmup(warmup) {
+  return ["yes", "after-activation"].includes(warmup) ? warmup : "no";
+}
+
+function getWarmupLabel(warmup) {
+  return warmup === "after-activation" ? "Échauffement après activation" : "Échauffement";
 }
 
 function findPlayer(playerId) {

@@ -752,9 +752,68 @@ textarea {
 }
 
 .training-form .primary-button,
+.training-form .secondary-button,
 .exercise-form .primary-button,
 .exercise-form .secondary-button {
   width: 100%;
+}
+
+.session-duration-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f8faf3;
+}
+
+.session-duration-summary strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.08rem;
+}
+
+.session-duration-summary span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.session-duration-summary em,
+.duration-status {
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.session-duration-summary .is-valid,
+.duration-status.is-valid {
+  background: #e6f3e8;
+  color: var(--green-dark);
+}
+
+.session-duration-summary .is-warning,
+.duration-status.is-warning {
+  background: #fbebe9;
+  color: #b43c34;
+}
+
+.session-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+#cancelSessionEditButton {
+  display: none;
+}
+
+#cancelSessionEditButton.is-visible {
+  display: block;
 }
 
 .exercise-controls {
@@ -857,11 +916,58 @@ textarea {
   font-weight: 900;
 }
 
+.warmup-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  width: fit-content;
+  border: 1px solid rgba(214, 159, 49, 0.36);
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: #fff5dc;
+  color: #8d610d;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.warmup-badge.is-conditional {
+  border-color: rgba(47, 143, 88, 0.3);
+  background: #eaf6ec;
+  color: var(--green-dark);
+}
+
+.warmup-icon {
+  position: relative;
+  display: inline-block;
+  width: 14px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.warmup-icon::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  width: 5px;
+  height: 8px;
+  border-radius: 999px 999px 6px 6px;
+  background: #fff;
+  transform: translateX(-50%) rotate(18deg);
+}
+
 .library-exercise-card .secondary-button {
-  width: 100%;
   min-height: 36px;
   padding: 0 10px;
   font-size: 0.82rem;
+}
+
+.library-exercise-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px 36px;
+  gap: 8px;
 }
 
 .exercise-detail {
@@ -949,6 +1055,7 @@ textarea {
 .exercise-detail-modal-meta {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -980,10 +1087,21 @@ textarea {
 }
 
 .exercise-delete-button,
-.session-delete-button {
+.session-delete-button,
+.exercise-edit-button,
+.session-edit-button {
   width: 36px;
   min-height: 36px;
+}
+
+.exercise-delete-button,
+.session-delete-button {
   background: #b43c34;
+}
+
+.exercise-edit-button,
+.session-edit-button {
+  background: var(--ink);
 }
 
 .training-session-card {
@@ -1001,6 +1119,11 @@ textarea {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: start;
+}
+
+.session-card-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .training-session-card p {
@@ -1256,12 +1379,20 @@ textarea {
   }
 
   .exercise-delete-button,
-  .session-delete-button {
+  .session-delete-button,
+  .exercise-edit-button,
+  .session-edit-button {
     width: 100%;
   }
 
   .training-session-heading {
     grid-template-columns: 1fr;
+  }
+
+  .session-card-actions,
+  .session-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .pitch {

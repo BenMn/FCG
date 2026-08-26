@@ -116,9 +116,13 @@
               <input id="sessionName" name="sessionName" type="text" placeholder="Ex: Mardi - conservation" autocomplete="off" required>
             </div>
 
+            <div id="draftSessionSummary" class="session-duration-summary"></div>
             <div id="draftExercises" class="exercise-list"></div>
 
-            <button class="primary-button" type="submit">Créer la séance</button>
+            <div class="session-actions">
+              <button id="cancelSessionEditButton" class="secondary-button" type="button">Annuler</button>
+              <button id="saveSessionButton" class="primary-button" type="submit">Créer la séance</button>
+            </div>
           </form>
         </section>
 
@@ -196,6 +200,15 @@
           </div>
 
           <div class="form-row">
+            <label for="exerciseWarmup">Échauffement</label>
+            <select id="exerciseWarmup" name="exerciseWarmup" class="formation-select">
+              <option value="no">Non</option>
+              <option value="yes">Oui</option>
+              <option value="after-activation">Après activation</option>
+            </select>
+          </div>
+
+          <div class="form-row">
             <label for="exerciseDescription">Description</label>
             <textarea id="exerciseDescription" name="exerciseDescription" rows="5" placeholder="Organisation, consignes, variantes..." required></textarea>
           </div>
@@ -212,7 +225,7 @@
 
           <div class="modal-actions">
             <button class="secondary-button" type="button" data-close-exercise-modal>Annuler</button>
-            <button class="primary-button" type="submit">Ajouter</button>
+            <button id="saveExerciseButton" class="primary-button" type="submit">Ajouter</button>
           </div>
         </form>
       </section>
