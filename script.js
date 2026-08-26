@@ -590,6 +590,7 @@ function switchView(view) {
 
 function updateActiveView() {
   const isTraining = state.activeView === "training";
+  document.body.classList.toggle("is-training-view", isTraining);
   elements.lineupView.classList.toggle("is-active", !isTraining);
   elements.trainingView.classList.toggle("is-active", isTraining);
 
@@ -764,7 +765,7 @@ function renderRatingInputs(ratings, namePrefix) {
   return TRAINING_CRITERIA.map((criterion) => {
     const options = [1, 2, 3, 4, 5].map((rating) => {
       const selected = normalizedRatings[criterion.id] === rating ? "selected" : "";
-      return `<option value="${rating}" ${selected}>${rating}/5</option>`;
+      return `<option value="${rating}" ${selected}>${starsForRating(rating)}</option>`;
     }).join("");
 
     return `
@@ -785,7 +786,7 @@ function renderRatingSummary(ratings) {
     return `
       <span class="rating-chip">
         <strong>${criterion.label}</strong>
-        ${normalizedRatings[criterion.id]}/5
+        <span class="stars" aria-label="${normalizedRatings[criterion.id]} sur 5">${starsForRating(normalizedRatings[criterion.id])}</span>
       </span>
     `;
   }).join("");
@@ -1345,6 +1346,11 @@ function clampRating(rating) {
   }
 
   return Math.min(5, Math.max(1, Math.round(rating)));
+}
+
+function starsForRating(rating) {
+  const normalizedRating = clampRating(rating);
+  return `${"★".repeat(normalizedRating)}${"☆".repeat(5 - normalizedRating)}`;
 }
 
 function sanitizeLineups(lineups) {

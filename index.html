@@ -15,15 +15,15 @@
         </div>
         <div class="topbar-actions">
           <button id="openPlayerModalButton" class="primary-button topbar-add-button" type="button">Ajouter un joueur</button>
-          <label class="select-label" for="formatSelect">Format</label>
-          <select id="formatSelect" class="formation-select format-select">
+          <label class="select-label" for="formatSelect" data-lineup-control>Format</label>
+          <select id="formatSelect" class="formation-select format-select" data-lineup-control>
             <option value="11">Foot à 11</option>
             <option value="7">Foot à 7</option>
             <option value="5">Foot à 5</option>
           </select>
-          <label class="select-label" for="formationSelect">Système</label>
-          <select id="formationSelect" class="formation-select"></select>
-          <button id="resetLineupButton" class="icon-button" type="button" title="Vider le terrain" aria-label="Vider le terrain">
+          <label class="select-label" for="formationSelect" data-lineup-control>Système</label>
+          <select id="formationSelect" class="formation-select" data-lineup-control></select>
+          <button id="resetLineupButton" class="icon-button" type="button" title="Vider le terrain" aria-label="Vider le terrain" data-lineup-control>
             <span aria-hidden="true">↺</span>
           </button>
         </div>

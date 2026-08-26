@@ -120,8 +120,16 @@ button:disabled {
   display: none;
 }
 
+.app-view:not(.is-active) {
+  display: none;
+}
+
 .app-view.is-active {
   display: grid;
+}
+
+.is-training-view [data-lineup-control] {
+  display: none;
 }
 
 .select-label {
@@ -662,6 +670,13 @@ select {
 
 .rating-chip strong {
   color: var(--ink);
+}
+
+.stars {
+  color: var(--gold);
+  font-size: 0.98rem;
+  letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .selection-actions {
