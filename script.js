@@ -15,6 +15,14 @@ const POSITIONS = [
   { id: "BU", label: "BU", group: "Attaque" },
 ];
 
+const TRAINING_CRITERIA = [
+  { id: "technique", label: "Technique" },
+  { id: "jeu", label: "Jeu" },
+  { id: "physique", label: "Physique" },
+];
+
+const DEFAULT_RATING = 3;
+
 const FORMATIONS = {
   "4-2-3-1": [
     ["GB", 50, 92],
@@ -237,12 +245,12 @@ const BASE_FORMATIONS = {
 };
 
 const DEFAULT_PLAYERS = [
-  { id: makeId(), name: "Alex", positions: ["GB"] },
-  { id: makeId(), name: "Ben", positions: ["DC", "MDC"] },
-  { id: makeId(), name: "Chris", positions: ["DG", "MG"] },
-  { id: makeId(), name: "David", positions: ["DD", "MD"] },
-  { id: makeId(), name: "Eliott", positions: ["MC", "MOC"] },
-  { id: makeId(), name: "Flo", positions: ["BU", "AD"] },
+  { id: makeId(), name: "Alex", positions: ["GB"], ratings: defaultRatings() },
+  { id: makeId(), name: "Ben", positions: ["DC", "MDC"], ratings: defaultRatings() },
+  { id: makeId(), name: "Chris", positions: ["DG", "MG"], ratings: defaultRatings() },
+  { id: makeId(), name: "David", positions: ["DD", "MD"], ratings: defaultRatings() },
+  { id: makeId(), name: "Eliott", positions: ["MC", "MOC"], ratings: defaultRatings() },
+  { id: makeId(), name: "Flo", positions: ["BU", "AD"], ratings: defaultRatings() },
 ];
 
 const state = loadState();
@@ -252,8 +260,12 @@ let pointerDrag = null;
 let suppressNextCardClick = false;
 let isEditingSelectedPlayer = false;
 let pendingSlotIndex = null;
+let draftExercises = [];
 
 const elements = {
+  viewTabs: document.querySelectorAll("[data-view-tab]"),
+  lineupView: document.querySelector("#lineupView"),
+  trainingView: document.querySelector("#trainingView"),
   formatSelect: document.querySelector("#formatSelect"),
   formationSelect: document.querySelector("#formationSelect"),
   formationTitle: document.querySelector("#formationTitle"),
@@ -266,6 +278,7 @@ const elements = {
   slotPickerDetails: document.querySelector("#slotPickerDetails"),
   slotPickerPlayers: document.querySelector("#slotPickerPlayers"),
   positionOptions: document.querySelector("#positionOptions"),
+  playerRatingOptions: document.querySelector("#playerRatingOptions"),
   playerForm: document.querySelector("#playerForm"),
   playerName: document.querySelector("#playerName"),
   availablePlayers: document.querySelector("#availablePlayers"),
@@ -275,12 +288,23 @@ const elements = {
   lineupCount: document.querySelector("#lineupCount"),
   resetLineupButton: document.querySelector("#resetLineupButton"),
   selectionDetails: document.querySelector("#selectionDetails"),
+  sessionForm: document.querySelector("#sessionForm"),
+  sessionName: document.querySelector("#sessionName"),
+  exerciseName: document.querySelector("#exerciseName"),
+  exerciseDuration: document.querySelector("#exerciseDuration"),
+  exerciseObjective: document.querySelector("#exerciseObjective"),
+  addExerciseButton: document.querySelector("#addExerciseButton"),
+  draftExercises: document.querySelector("#draftExercises"),
+  trainingSessions: document.querySelector("#trainingSessions"),
+  sessionCount: document.querySelector("#sessionCount"),
 };
 
 init();
 
 function init() {
   renderPositionOptions();
+  renderPlayerRatingOptions();
+  renderExerciseObjectiveOptions();
   renderFormationOptions();
   bindEvents();
   render();
@@ -292,6 +316,8 @@ function loadState() {
     teamSize: "11",
     formation: "4-4-2",
     lineups: {},
+    sessions: [],
+    activeView: "lineup",
   };
 
   try {
@@ -306,10 +332,12 @@ function loadState() {
       : TEAM_FORMATS[teamSize].defaultFormation;
 
     return {
-      players: Array.isArray(parsed.players) ? parsed.players : fallback.players,
+      players: sanitizePlayers(parsed.players, fallback.players),
       teamSize,
       formation,
       lineups: sanitizeLineups(parsed.lineups),
+      sessions: sanitizeSessions(parsed.sessions),
+      activeView: parsed.activeView === "training" ? "training" : fallback.activeView,
     };
   } catch {
     return fallback;
@@ -321,7 +349,25 @@ function saveState() {
 }
 
 function bindEvents() {
+  elements.viewTabs.forEach((tab) => {
+    tab.addEventListener("click", () => switchView(tab.dataset.viewTab));
+  });
   elements.playerForm.addEventListener("submit", addPlayer);
+  elements.addExerciseButton.addEventListener("click", addDraftExercise);
+  elements.sessionForm.addEventListener("submit", createTrainingSession);
+  elements.draftExercises.addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-delete-draft-exercise]");
+    if (!deleteButton) return;
+    draftExercises = draftExercises.filter((exercise) => exercise.id !== deleteButton.dataset.deleteDraftExercise);
+    renderDraftExercises();
+  });
+  elements.trainingSessions.addEventListener("click", (event) => {
+    const deleteButton = event.target.closest("[data-delete-session]");
+    if (!deleteButton) return;
+    state.sessions = state.sessions.filter((session) => session.id !== deleteButton.dataset.deleteSession);
+    saveState();
+    renderTraining();
+  });
   elements.selectionDetails.addEventListener("submit", updateSelectedPlayer);
   elements.selectionDetails.addEventListener("click", (event) => {
     if (event.target.matches("[data-edit-selected]")) {
@@ -414,6 +460,16 @@ function renderPositionOptions() {
     `;
     elements.positionOptions.append(label);
   });
+}
+
+function renderPlayerRatingOptions() {
+  elements.playerRatingOptions.innerHTML = renderRatingInputs(defaultRatings(), "playerRating");
+}
+
+function renderExerciseObjectiveOptions() {
+  elements.exerciseObjective.innerHTML = TRAINING_CRITERIA.map((criterion) => {
+    return `<option value="${criterion.id}">${criterion.label}</option>`;
+  }).join("");
 }
 
 function renderFormationOptions() {
@@ -512,6 +568,7 @@ function renderSlotPicker() {
 }
 
 function render() {
+  updateActiveView();
   renderFormationOptions();
   elements.formatSelect.value = state.teamSize;
   elements.formationSelect.value = state.formation;
@@ -520,8 +577,27 @@ function render() {
   renderSlots();
   renderAvailablePlayers();
   renderSelection();
+  renderTraining();
   updateCounts();
   saveState();
+}
+
+function switchView(view) {
+  state.activeView = view === "training" ? "training" : "lineup";
+  saveState();
+  render();
+}
+
+function updateActiveView() {
+  const isTraining = state.activeView === "training";
+  elements.lineupView.classList.toggle("is-active", !isTraining);
+  elements.trainingView.classList.toggle("is-active", isTraining);
+
+  elements.viewTabs.forEach((tab) => {
+    const isActive = tab.dataset.viewTab === state.activeView;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", String(isActive));
+  });
 }
 
 function renderSlots() {
@@ -623,6 +699,10 @@ function renderSelection() {
         <strong>Postes favoris</strong>
         <div class="badges selection-badges">${favoriteBadges}</div>
       </div>
+      <div class="selection-box">
+        <strong>Notes</strong>
+        <div class="rating-summary">${renderRatingSummary(selected.ratings)}</div>
+      </div>
       <div class="selection-actions">
         ${slot ? '<button class="secondary-button" type="button" data-bench-selected>Retirer du terrain</button>' : ""}
         <button class="primary-button" type="button" data-edit-selected>Modifier joueur</button>
@@ -649,6 +729,12 @@ function renderSelection() {
           ${renderEditPositionOptions(selected)}
         </div>
       </fieldset>
+      <fieldset class="ratings-fieldset">
+        <legend>Notes</legend>
+        <div class="rating-options">
+          ${renderRatingInputs(selected.ratings, "editRating")}
+        </div>
+      </fieldset>
       <div class="selection-actions">
         <button class="secondary-button" type="button" data-cancel-edit>Annuler</button>
         <button class="primary-button" type="submit">Enregistrer</button>
@@ -672,6 +758,48 @@ function renderEditPositionOptions(player) {
   }).join("");
 }
 
+function renderRatingInputs(ratings, namePrefix) {
+  const normalizedRatings = normalizeRatings(ratings);
+
+  return TRAINING_CRITERIA.map((criterion) => {
+    const options = [1, 2, 3, 4, 5].map((rating) => {
+      const selected = normalizedRatings[criterion.id] === rating ? "selected" : "";
+      return `<option value="${rating}" ${selected}>${rating}/5</option>`;
+    }).join("");
+
+    return `
+      <label class="rating-option">
+        <span>${criterion.label}</span>
+        <select name="${namePrefix}-${criterion.id}">
+          ${options}
+        </select>
+      </label>
+    `;
+  }).join("");
+}
+
+function renderRatingSummary(ratings) {
+  const normalizedRatings = normalizeRatings(ratings);
+
+  return TRAINING_CRITERIA.map((criterion) => {
+    return `
+      <span class="rating-chip">
+        <strong>${criterion.label}</strong>
+        ${normalizedRatings[criterion.id]}/5
+      </span>
+    `;
+  }).join("");
+}
+
+function getRatingsFromForm(form, namePrefix) {
+  return TRAINING_CRITERIA.reduce((ratings, criterion) => {
+    const field = form.elements[`${namePrefix}-${criterion.id}`];
+    const value = Number(field?.value);
+    ratings[criterion.id] = clampRating(value);
+    return ratings;
+  }, {});
+}
+
 function updateSelectedPlayer(event) {
   event.preventDefault();
 
@@ -681,6 +809,7 @@ function updateSelectedPlayer(event) {
   const form = event.target;
   const name = form.elements.editPlayerName.value.trim();
   const positions = [...form.querySelectorAll('input[name="editPositions"]:checked')].map((input) => input.value);
+  const ratings = getRatingsFromForm(form, "editRating");
 
   if (!name || !positions.length) {
     return;
@@ -688,6 +817,7 @@ function updateSelectedPlayer(event) {
 
   selected.name = name;
   selected.positions = positions;
+  selected.ratings = ratings;
   isEditingSelectedPlayer = false;
   saveState();
   render();
@@ -705,18 +835,137 @@ function addPlayer(event) {
 
   const name = elements.playerName.value.trim();
   const positions = [...elements.playerForm.querySelectorAll('input[name="positions"]:checked')].map((input) => input.value);
+  const ratings = getRatingsFromForm(elements.playerForm, "playerRating");
   if (!name || !positions.length) return;
 
   state.players.push({
     id: makeId(),
     name,
     positions,
+    ratings,
   });
 
   elements.playerForm.reset();
   closePlayerModal();
   saveState();
   render();
+}
+
+function addDraftExercise() {
+  const name = elements.exerciseName.value.trim();
+  const duration = Number(elements.exerciseDuration.value);
+  const objective = elements.exerciseObjective.value;
+
+  if (!name || !Number.isFinite(duration) || duration < 1 || !getCriterion(objective)) {
+    return;
+  }
+
+  draftExercises.push({
+    id: makeId(),
+    name,
+    duration: Math.round(duration),
+    objective,
+  });
+
+  elements.exerciseName.value = "";
+  elements.exerciseDuration.value = "";
+  elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
+  elements.exerciseName.focus();
+  renderDraftExercises();
+}
+
+function createTrainingSession(event) {
+  event.preventDefault();
+
+  const name = elements.sessionName.value.trim();
+  if (!name || !draftExercises.length) {
+    return;
+  }
+
+  state.sessions.unshift({
+    id: makeId(),
+    name,
+    createdAt: new Date().toISOString(),
+    exercises: draftExercises.map((exercise) => ({ ...exercise })),
+  });
+
+  draftExercises = [];
+  elements.sessionForm.reset();
+  elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
+  saveState();
+  renderTraining();
+}
+
+function renderTraining() {
+  renderDraftExercises();
+  renderTrainingSessions();
+}
+
+function renderDraftExercises() {
+  elements.draftExercises.innerHTML = "";
+
+  if (!draftExercises.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Ajoutez des exercices pour construire la séance.";
+    elements.draftExercises.append(empty);
+    return;
+  }
+
+  draftExercises.forEach((exercise) => {
+    elements.draftExercises.append(createExerciseRow(exercise, "draft"));
+  });
+}
+
+function renderTrainingSessions() {
+  elements.sessionCount.textContent = state.sessions.length;
+  elements.trainingSessions.innerHTML = "";
+
+  if (!state.sessions.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Aucune séance créée pour le moment.";
+    elements.trainingSessions.append(empty);
+    return;
+  }
+
+  state.sessions.forEach((session) => {
+    const totalDuration = session.exercises.reduce((total, exercise) => total + exercise.duration, 0);
+    const article = document.createElement("article");
+    article.className = "training-session-card";
+    article.innerHTML = `
+      <div class="training-session-heading">
+        <div>
+          <h3>${escapeHtml(session.name)}</h3>
+          <p>${session.exercises.length} exercice${session.exercises.length > 1 ? "s" : ""} · ${totalDuration} min</p>
+        </div>
+        <button class="icon-button session-delete-button" type="button" title="Supprimer la séance" aria-label="Supprimer la séance" data-delete-session="${session.id}">×</button>
+      </div>
+      <div class="exercise-list">
+        ${session.exercises.map((exercise) => exerciseRowHtml(exercise)).join("")}
+      </div>
+    `;
+    elements.trainingSessions.append(article);
+  });
+}
+
+function createExerciseRow(exercise, mode) {
+  const template = document.createElement("template");
+  template.innerHTML = exerciseRowHtml(exercise, mode === "draft").trim();
+  return template.content.firstElementChild;
+}
+
+function exerciseRowHtml(exercise, canDelete = false) {
+  return `
+    <article class="exercise-row">
+      <div>
+        <strong>${escapeHtml(exercise.name)}</strong>
+        <span>${exercise.duration} min</span>
+      </div>
+      <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
+      ${canDelete ? `<button class="icon-button exercise-delete-button" type="button" title="Retirer l'exercice" aria-label="Retirer l'exercice" data-delete-draft-exercise="${exercise.id}">×</button>` : ""}
+    </article>
+  `;
 }
 
 function createPlayerCard(player, role = null, slotIndex = null) {
@@ -1053,6 +1302,51 @@ function getBaseFormations(teamSize) {
   return BASE_FORMATIONS[teamSize] || BASE_FORMATIONS["11"];
 }
 
+function sanitizePlayers(players, fallbackPlayers) {
+  if (!Array.isArray(players)) {
+    return fallbackPlayers;
+  }
+
+  const validPositions = new Set(POSITIONS.map((position) => position.id));
+
+  return players
+    .filter((player) => player && typeof player === "object" && typeof player.name === "string")
+    .map((player) => {
+      const positions = Array.isArray(player.positions)
+        ? player.positions.filter((position) => validPositions.has(position))
+        : [];
+
+      return {
+        id: typeof player.id === "string" ? player.id : makeId(),
+        name: player.name.trim() || "Joueur",
+        positions: positions.length ? positions : ["MC"],
+        ratings: normalizeRatings(player.ratings),
+      };
+    });
+}
+
+function defaultRatings() {
+  return TRAINING_CRITERIA.reduce((ratings, criterion) => {
+    ratings[criterion.id] = DEFAULT_RATING;
+    return ratings;
+  }, {});
+}
+
+function normalizeRatings(ratings) {
+  return TRAINING_CRITERIA.reduce((normalizedRatings, criterion) => {
+    normalizedRatings[criterion.id] = clampRating(Number(ratings?.[criterion.id]));
+    return normalizedRatings;
+  }, {});
+}
+
+function clampRating(rating) {
+  if (!Number.isFinite(rating)) {
+    return DEFAULT_RATING;
+  }
+
+  return Math.min(5, Math.max(1, Math.round(rating)));
+}
+
 function sanitizeLineups(lineups) {
   if (!lineups || typeof lineups !== "object") {
     return {};
@@ -1068,6 +1362,49 @@ function sanitizeLineups(lineups) {
     validLineups[lineupKey] = lineup;
     return validLineups;
   }, {});
+}
+
+function sanitizeSessions(sessions) {
+  if (!Array.isArray(sessions)) {
+    return [];
+  }
+
+  return sessions
+    .filter((session) => session && typeof session === "object" && typeof session.name === "string")
+    .map((session) => {
+      return {
+        id: typeof session.id === "string" ? session.id : makeId(),
+        name: session.name.trim() || "Séance",
+        createdAt: typeof session.createdAt === "string" ? session.createdAt : new Date().toISOString(),
+        exercises: sanitizeExercises(session.exercises),
+      };
+    })
+    .filter((session) => session.exercises.length);
+}
+
+function sanitizeExercises(exercises) {
+  if (!Array.isArray(exercises)) {
+    return [];
+  }
+
+  return exercises
+    .filter((exercise) => exercise && typeof exercise === "object" && typeof exercise.name === "string")
+    .map((exercise) => {
+      return {
+        id: typeof exercise.id === "string" ? exercise.id : makeId(),
+        name: exercise.name.trim() || "Exercice",
+        duration: Math.min(180, Math.max(1, Math.round(Number(exercise.duration) || 1))),
+        objective: getCriterion(exercise.objective)?.id || TRAINING_CRITERIA[0].id,
+      };
+    });
+}
+
+function getCriterion(criterionId) {
+  return TRAINING_CRITERIA.find((criterion) => criterion.id === criterionId);
+}
+
+function getCriterionLabel(criterionId) {
+  return getCriterion(criterionId)?.label || TRAINING_CRITERIA[0].label;
 }
 
 function findPlayer(playerId) {

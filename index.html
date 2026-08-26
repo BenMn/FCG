@@ -29,7 +29,12 @@
         </div>
       </header>
 
-      <main class="layout">
+      <nav class="app-tabs" aria-label="Navigation principale">
+        <button class="tab-button is-active" type="button" data-view-tab="lineup">Composition</button>
+        <button class="tab-button" type="button" data-view-tab="training">Entraînement</button>
+      </nav>
+
+      <main id="lineupView" class="layout app-view is-active">
         <section class="panel squad-panel" aria-labelledby="squadTitle">
           <div class="panel-heading">
             <div>
@@ -83,6 +88,59 @@
           <div id="selectionDetails" class="selection-details"></div>
         </aside>
       </main>
+
+      <main id="trainingView" class="training-view app-view" aria-labelledby="trainingTitle">
+        <section class="panel training-form-panel" aria-labelledby="trainingTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Entraînement</p>
+              <h2 id="trainingTitle">Nouvelle séance</h2>
+            </div>
+          </div>
+
+          <form id="sessionForm" class="training-form">
+            <div class="form-row">
+              <label for="sessionName">Nom de la séance</label>
+              <input id="sessionName" name="sessionName" type="text" placeholder="Ex: Mardi - conservation" autocomplete="off" required>
+            </div>
+
+            <div class="exercise-builder">
+              <div class="form-row">
+                <label for="exerciseName">Exercice</label>
+                <input id="exerciseName" name="exerciseName" type="text" placeholder="Ex: Toro 5v2" autocomplete="off">
+              </div>
+
+              <div class="exercise-controls">
+                <div class="form-row">
+                  <label for="exerciseDuration">Durée</label>
+                  <input id="exerciseDuration" name="exerciseDuration" type="number" min="1" max="180" step="1" placeholder="min">
+                </div>
+                <div class="form-row">
+                  <label for="exerciseObjective">Objectif</label>
+                  <select id="exerciseObjective" name="exerciseObjective" class="formation-select"></select>
+                </div>
+              </div>
+
+              <button id="addExerciseButton" class="secondary-button" type="button">Ajouter l'exercice</button>
+            </div>
+
+            <div id="draftExercises" class="exercise-list"></div>
+
+            <button class="primary-button" type="submit">Créer la séance</button>
+          </form>
+        </section>
+
+        <section class="panel training-sessions-panel" aria-labelledby="sessionsTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Programme</p>
+              <h2 id="sessionsTitle">Séances</h2>
+            </div>
+            <span id="sessionCount" class="count-pill">0</span>
+          </div>
+          <div id="trainingSessions" class="training-sessions"></div>
+        </section>
+      </main>
     </div>
 
     <div id="playerModal" class="modal" aria-hidden="true">
@@ -104,6 +162,10 @@
           <fieldset class="positions-fieldset">
             <legend>Postes</legend>
             <div id="positionOptions" class="position-options"></div>
+          </fieldset>
+          <fieldset class="ratings-fieldset">
+            <legend>Notes</legend>
+            <div id="playerRatingOptions" class="rating-options"></div>
           </fieldset>
           <div class="modal-actions">
             <button class="secondary-button" type="button" data-close-modal>Annuler</button>

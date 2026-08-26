@@ -95,6 +95,35 @@ button:disabled {
   justify-content: flex-end;
 }
 
+.app-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab-button {
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 12px 14px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.tab-button.is-active {
+  border-color: var(--green-dark);
+  color: var(--green-dark);
+}
+
+.app-view {
+  display: none;
+}
+
+.app-view.is-active {
+  display: grid;
+}
+
 .select-label {
   color: var(--muted);
   font-size: 0.82rem;
@@ -103,6 +132,14 @@ button:disabled {
 
 .formation-select,
 input {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  min-height: 42px;
+}
+
+select {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
@@ -209,18 +246,21 @@ input {
 }
 
 .form-row label,
-.positions-fieldset legend {
+.positions-fieldset legend,
+.ratings-fieldset legend {
   color: var(--muted);
   font-size: 0.82rem;
   font-weight: 800;
 }
 
-.form-row input {
+.form-row input,
+.form-row select {
   width: 100%;
   padding: 0 12px;
 }
 
-.positions-fieldset {
+.positions-fieldset,
+.ratings-fieldset {
   min-width: 0;
   margin: 0;
   padding: 0;
@@ -261,6 +301,31 @@ input {
   border-color: rgba(31, 110, 67, 0.45);
   background: #e6f3e8;
   color: var(--green-dark);
+}
+
+.rating-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.rating-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 96px;
+  gap: 10px;
+  align-items: center;
+}
+
+.rating-option span {
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.rating-option select {
+  width: 100%;
+  padding: 0 8px;
+  font-weight: 900;
 }
 
 .bench-drop-zone {
@@ -576,6 +641,29 @@ input {
   margin-top: 10px;
 }
 
+.rating-summary {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.rating-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #eef3ee;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.rating-chip strong {
+  color: var(--ink);
+}
+
 .selection-actions {
   display: grid;
   grid-template-columns: 1fr;
@@ -596,6 +684,128 @@ input {
 
 .is-touch-dragging {
   user-select: none;
+}
+
+.training-view {
+  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.training-form-panel,
+.training-sessions-panel {
+  padding: 16px;
+}
+
+.training-form,
+.exercise-builder,
+.training-sessions {
+  display: grid;
+  gap: 12px;
+}
+
+.training-form .primary-button,
+.exercise-builder .secondary-button {
+  width: 100%;
+}
+
+.exercise-builder {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #f8faf3;
+}
+
+.exercise-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 120px) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.exercise-list {
+  display: grid;
+  gap: 8px;
+}
+
+.exercise-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 52px;
+  border: 1px solid rgba(22, 32, 25, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+  background: #fff;
+}
+
+.exercise-row strong,
+.training-session-card h3 {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exercise-row span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.objective-pill {
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 0.72rem;
+  font-weight: 950;
+}
+
+.objective-pill.technique {
+  background: #e6f3e8;
+  color: var(--green-dark);
+}
+
+.objective-pill.jeu {
+  background: #e7f0f8;
+  color: var(--blue);
+}
+
+.objective-pill.physique {
+  background: #fbebe9;
+  color: #b43c34;
+}
+
+.exercise-delete-button,
+.session-delete-button {
+  width: 36px;
+  min-height: 36px;
+  background: #b43c34;
+}
+
+.training-session-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(25, 50, 35, 0.08);
+}
+
+.training-session-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.training-session-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
 }
 
 .slot-picker-dialog {
@@ -771,6 +981,19 @@ input {
     width: 100%;
   }
 
+  .app-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin-inline: -14px;
+    padding-inline: 14px;
+    background: var(--surface);
+  }
+
+  .tab-button {
+    flex: 1;
+  }
+
   .formation-select {
     flex: 1;
   }
@@ -789,6 +1012,24 @@ input {
 
   .details-panel {
     order: 3;
+  }
+
+  .training-view {
+    grid-template-columns: 1fr;
+  }
+
+  .exercise-controls,
+  .exercise-row {
+    grid-template-columns: 1fr;
+  }
+
+  .exercise-delete-button,
+  .session-delete-button {
+    width: 100%;
+  }
+
+  .training-session-heading {
+    grid-template-columns: 1fr;
   }
 
   .pitch {
