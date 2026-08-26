@@ -121,6 +121,11 @@
                 </div>
               </div>
 
+              <div class="form-row">
+                <label for="exerciseDescription">Description</label>
+                <textarea id="exerciseDescription" name="exerciseDescription" rows="4" placeholder="Organisation, consignes, variantes..." required></textarea>
+              </div>
+
               <button id="addExerciseButton" class="secondary-button" type="button">Ajouter l'exercice</button>
             </div>
 
@@ -128,6 +133,17 @@
 
             <button class="primary-button" type="submit">Créer la séance</button>
           </form>
+        </section>
+
+        <section class="panel exercise-library-panel" aria-labelledby="exerciseLibraryTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Bibliothèque</p>
+              <h2 id="exerciseLibraryTitle">Exercices</h2>
+            </div>
+            <span id="exerciseLibraryCount" class="count-pill">0</span>
+          </div>
+          <div id="exerciseLibrary" class="exercise-library"></div>
         </section>
 
         <section class="panel training-sessions-panel" aria-labelledby="sessionsTitle">

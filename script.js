@@ -253,48 +253,101 @@ const DEFAULT_PLAYERS = [
   { id: makeId(), name: "Flo", positions: ["BU", "AD"], ratings: defaultRatings() },
 ];
 
+const DEFAULT_EXERCISE_LIBRARY = [
+  {
+    id: "echauffement-ballon",
+    name: "Échauffement avec ballon",
+    defaultDuration: 8,
+    objective: "technique",
+    description: "Zone de 25 x 25 m, idéalement avec 1 ballon par joueur. Pendant 4 min, conduite libre avec intérieur/extérieur, changements de direction, pied faible et consignes annoncées toutes les 20 à 30 s. Puis 4 min par deux avec passes courtes en mouvement : après chaque passe, le joueur doit se déplacer pour redevenir disponible.",
+    diagram: "Zone 25 x 25 m\n\n+----------------+\n| o  o  o  o  o |\n|   conduite    |\n| o  o  o  o  o |\n+----------------+\n\nPuis par deux : A <-> B en mouvement",
+    coachingPoints: [
+      "Lever la tête avant de recevoir ou conduire.",
+      "Garder le ballon proche du pied.",
+      "Passer puis bouger immédiatement.",
+    ],
+  },
+  {
+    id: "passe-controle-oriente",
+    name: "Passe / contrôle orienté par 2",
+    defaultDuration: 12,
+    objective: "technique",
+    description: "Par groupes de deux, espacés de 8 à 10 m. Chaque joueur a une petite porte de deux plots devant lui. Le receveur prend l'information avant la passe, reçoit à côté de la porte, oriente son contrôle pour faire passer le ballon de l'autre côté, puis transmet. Après quelques minutes, passer en 2 touches maximum si la qualité reste bonne.",
+    diagram: "A        | |  -------->  | |        B\n         porte           porte\n\nB contrôle d'un côté de la porte,\npuis rejoue de l'autre côté.",
+    coachingPoints: [
+      "Corps ouvert avant la réception.",
+      "Premier contrôle qui prépare la passe suivante.",
+      "Passe au sol appuyée, cheville ferme.",
+      "Travailler les deux pieds.",
+    ],
+  },
+  {
+    id: "triangle-passe-suis",
+    name: "Triangle : passe et suis ta passe",
+    defaultDuration: 12,
+    objective: "technique",
+    description: "Groupes de 4 à 5 joueurs sur un triangle de 10 à 12 m entre les plots. A passe à B et prend sa place. B contrôle orienté vers C, passe à C puis prend sa place. C joue vers A, et ainsi de suite. Progression : 2 touches maximum, puis contrôle avec le pied opposé à l'origine de la passe pour ouvrir le corps.",
+    diagram: "          B\n         / \\\n        /   \\\n       /     \\\n      A ----- C\n\nPasse : A -> B\nCourse : A prend la place de B",
+    coachingPoints: [
+      "Regarder avant de recevoir.",
+      "Orienter le contrôle vers la prochaine solution.",
+      "Accélérer après la passe pour occuper la place suivante.",
+    ],
+  },
+  {
+    id: "conservation-5v2-6v2",
+    name: "Conservation 5v2 / 6v2",
+    defaultDuration: 11,
+    objective: "jeu",
+    description: "Carré d'environ 12 x 12 m pour un 5v2, à agrandir si le niveau le demande. Les joueurs extérieurs conservent le ballon face à deux défenseurs. D'abord touches libres, puis 3 touches, puis éventuellement 2 touches pour les plus à l'aise. Changer les défenseurs après récupération ou toutes les 45 à 60 s. Challenge possible : 8 passes consécutives = 1 point.",
+    diagram: "+----------------+\n| o          o   |\n|      x  x      |\n| o          o   |\n|       o        |\n+----------------+\n\n5 contre 2 dans le carré",
+    coachingPoints: [
+      "Scanner avant réception.",
+      "Contrôler loin du défenseur.",
+      "Créer un angle de passe après avoir joué.",
+      "Ne pas rester spectateur de sa passe.",
+    ],
+  },
+  {
+    id: "opposition-premiere-mi-temps",
+    name: "Opposition - 1re mi-temps",
+    defaultDuration: 30,
+    objective: "jeu",
+    description: "Match de 30 min avec une règle bonus, sans bloquer le jeu : un but vaut 2 points si l'action comporte au moins 5 passes consécutives, sinon il vaut 1 point. L'objectif est d'encourager la disponibilité, le contrôle utile et la circulation sans imposer une contrainte artificielle à chaque situation.",
+    diagram: "",
+    coachingPoints: [
+      "Encourager les joueurs à proposer après la passe.",
+      "Valoriser les séquences construites.",
+      "Intervenir seulement lors d'arrêts naturels.",
+    ],
+  },
+  {
+    id: "opposition-deuxieme-mi-temps",
+    name: "Opposition - 2e mi-temps",
+    defaultDuration: 30,
+    objective: "jeu",
+    description: "Match libre de 30 min. Observer si le travail technique ressort naturellement : regard avant réception, contrôle orienté vers la suite, mouvement après la passe. Limiter les interventions pour laisser le jeu vivre et ne faire que des rappels courts.",
+    diagram: "",
+    coachingPoints: [
+      "Observer plus que corriger.",
+      "Repérer les contrôles qui font gagner du temps.",
+      "Faire des remarques courtes et concrètes.",
+    ],
+  },
+];
+
 const DEFAULT_SESSIONS = [
   {
     id: makeId(),
     name: "Séance 1 - Contrôle, passe et disponibilité",
     createdAt: new Date().toISOString(),
     exercises: [
-      {
-        id: makeId(),
-        name: "Échauffement avec ballon",
-        duration: 8,
-        objective: "technique",
-      },
-      {
-        id: makeId(),
-        name: "Passe / contrôle orienté par 2",
-        duration: 12,
-        objective: "technique",
-      },
-      {
-        id: makeId(),
-        name: "Triangle : passe et suis ta passe",
-        duration: 12,
-        objective: "technique",
-      },
-      {
-        id: makeId(),
-        name: "Conservation 5v2 / 6v2",
-        duration: 11,
-        objective: "jeu",
-      },
-      {
-        id: makeId(),
-        name: "Opposition - 1re mi-temps",
-        duration: 30,
-        objective: "jeu",
-      },
-      {
-        id: makeId(),
-        name: "Opposition - 2e mi-temps",
-        duration: 30,
-        objective: "jeu",
-      },
+      exerciseFromLibrary("echauffement-ballon"),
+      exerciseFromLibrary("passe-controle-oriente"),
+      exerciseFromLibrary("triangle-passe-suis"),
+      exerciseFromLibrary("conservation-5v2-6v2"),
+      exerciseFromLibrary("opposition-premiere-mi-temps"),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps"),
     ],
   },
 ];
@@ -339,8 +392,11 @@ const elements = {
   exerciseName: document.querySelector("#exerciseName"),
   exerciseDuration: document.querySelector("#exerciseDuration"),
   exerciseObjective: document.querySelector("#exerciseObjective"),
+  exerciseDescription: document.querySelector("#exerciseDescription"),
   addExerciseButton: document.querySelector("#addExerciseButton"),
   draftExercises: document.querySelector("#draftExercises"),
+  exerciseLibrary: document.querySelector("#exerciseLibrary"),
+  exerciseLibraryCount: document.querySelector("#exerciseLibraryCount"),
   trainingSessions: document.querySelector("#trainingSessions"),
   sessionCount: document.querySelector("#sessionCount"),
 };
@@ -362,6 +418,7 @@ function loadState() {
     teamSize: "11",
     formation: "4-4-2",
     lineups: {},
+    exerciseLibrary: DEFAULT_EXERCISE_LIBRARY,
     sessions: DEFAULT_SESSIONS,
     activeView: "lineup",
     defaultTrainingSeeded: true,
@@ -377,6 +434,7 @@ function loadState() {
     const formation = getBaseFormations(teamSize)[parsedFormation]
       ? parsedFormation
       : TEAM_FORMATS[teamSize].defaultFormation;
+    const exerciseLibrary = seedDefaultExerciseLibrary(sanitizeExerciseLibrary(parsed.exerciseLibrary));
     const sessions = Array.isArray(parsed.sessions) ? sanitizeSessions(parsed.sessions) : [];
     const seededSessions = parsed.defaultTrainingSeeded === true ? sessions : seedDefaultSessions(sessions);
 
@@ -385,6 +443,7 @@ function loadState() {
       teamSize,
       formation,
       lineups: sanitizeLineups(parsed.lineups),
+      exerciseLibrary,
       sessions: seededSessions,
       activeView: parsed.activeView === "training" ? "training" : fallback.activeView,
       defaultTrainingSeeded: true,
@@ -410,6 +469,11 @@ function bindEvents() {
     if (!deleteButton) return;
     draftExercises = draftExercises.filter((exercise) => exercise.id !== deleteButton.dataset.deleteDraftExercise);
     renderDraftExercises();
+  });
+  elements.exerciseLibrary.addEventListener("click", (event) => {
+    const addButton = event.target.closest("[data-add-library-exercise]");
+    if (!addButton) return;
+    addLibraryExerciseToDraft(addButton.dataset.addLibraryExercise);
   });
   elements.trainingSessions.addEventListener("click", (event) => {
     const deleteButton = event.target.closest("[data-delete-session]");
@@ -909,8 +973,9 @@ function addDraftExercise() {
   const name = elements.exerciseName.value.trim();
   const duration = Number(elements.exerciseDuration.value);
   const objective = elements.exerciseObjective.value;
+  const description = elements.exerciseDescription.value.trim();
 
-  if (!name || !Number.isFinite(duration) || duration < 1 || !getCriterion(objective)) {
+  if (!name || !description || !Number.isFinite(duration) || duration < 1 || !getCriterion(objective)) {
     return;
   }
 
@@ -919,12 +984,24 @@ function addDraftExercise() {
     name,
     duration: Math.round(duration),
     objective,
+    description,
+    diagram: "",
+    coachingPoints: [],
   });
 
   elements.exerciseName.value = "";
   elements.exerciseDuration.value = "";
+  elements.exerciseDescription.value = "";
   elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
   elements.exerciseName.focus();
+  renderDraftExercises();
+}
+
+function addLibraryExerciseToDraft(exerciseId) {
+  const exercise = state.exerciseLibrary.find((item) => item.id === exerciseId);
+  if (!exercise) return;
+
+  draftExercises.push(exerciseFromTemplate(exercise));
   renderDraftExercises();
 }
 
@@ -951,8 +1028,18 @@ function createTrainingSession(event) {
 }
 
 function renderTraining() {
+  renderExerciseLibrary();
   renderDraftExercises();
   renderTrainingSessions();
+}
+
+function renderExerciseLibrary() {
+  elements.exerciseLibraryCount.textContent = state.exerciseLibrary.length;
+  elements.exerciseLibrary.innerHTML = "";
+
+  state.exerciseLibrary.forEach((exercise) => {
+    elements.exerciseLibrary.append(createLibraryExerciseCard(exercise));
+  });
 }
 
 function renderDraftExercises() {
@@ -1003,6 +1090,24 @@ function renderTrainingSessions() {
   });
 }
 
+function createLibraryExerciseCard(exercise) {
+  const template = document.createElement("template");
+  template.innerHTML = `
+    <article class="library-exercise-card">
+      <div class="library-exercise-heading">
+        <div>
+          <h3>${escapeHtml(exercise.name)}</h3>
+          <p>${exercise.defaultDuration || exercise.duration} min</p>
+        </div>
+        <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
+      </div>
+      ${exerciseDetailHtml(exercise)}
+      <button class="secondary-button" type="button" data-add-library-exercise="${exercise.id}">Ajouter à la séance</button>
+    </article>
+  `.trim();
+  return template.content.firstElementChild;
+}
+
 function createExerciseRow(exercise, mode) {
   const template = document.createElement("template");
   template.innerHTML = exerciseRowHtml(exercise, mode === "draft").trim();
@@ -1012,13 +1117,32 @@ function createExerciseRow(exercise, mode) {
 function exerciseRowHtml(exercise, canDelete = false) {
   return `
     <article class="exercise-row">
-      <div>
-        <strong>${escapeHtml(exercise.name)}</strong>
-        <span>${exercise.duration} min</span>
+      <div class="exercise-row-heading">
+        <div>
+          <strong>${escapeHtml(exercise.name)}</strong>
+          <span>${exercise.duration} min</span>
+        </div>
+        <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
+        ${canDelete ? `<button class="icon-button exercise-delete-button" type="button" title="Retirer l'exercice" aria-label="Retirer l'exercice" data-delete-draft-exercise="${exercise.id}">×</button>` : ""}
       </div>
-      <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
-      ${canDelete ? `<button class="icon-button exercise-delete-button" type="button" title="Retirer l'exercice" aria-label="Retirer l'exercice" data-delete-draft-exercise="${exercise.id}">×</button>` : ""}
+      ${exerciseDetailHtml(exercise)}
     </article>
+  `;
+}
+
+function exerciseDetailHtml(exercise) {
+  const coachingPoints = Array.isArray(exercise.coachingPoints) ? exercise.coachingPoints : [];
+
+  return `
+    <div class="exercise-detail">
+      <p>${escapeHtml(exercise.description || "Description à compléter.")}</p>
+      ${exercise.diagram ? `<pre class="exercise-diagram">${escapeHtml(exercise.diagram)}</pre>` : ""}
+      ${coachingPoints.length ? `
+        <ul class="coaching-points">
+          ${coachingPoints.map((point) => `<li>${escapeHtml(point)}</li>`).join("")}
+        </ul>
+      ` : ""}
+    </div>
   `;
 }
 
@@ -1455,6 +1579,27 @@ function seedDefaultSessions(sessions) {
   return [...missingDefaultSessions, ...sessions];
 }
 
+function sanitizeExerciseLibrary(exercises) {
+  if (!Array.isArray(exercises)) {
+    return [];
+  }
+
+  return exercises
+    .filter((exercise) => exercise && typeof exercise === "object" && typeof exercise.name === "string")
+    .map((exercise) => sanitizeExercise(exercise))
+    .filter((exercise) => exercise.description);
+}
+
+function seedDefaultExerciseLibrary(exercises) {
+  const existingIds = new Set(exercises.map((exercise) => exercise.id));
+  const existingNames = new Set(exercises.map((exercise) => exercise.name));
+  const missingDefaultExercises = DEFAULT_EXERCISE_LIBRARY.filter((exercise) => {
+    return !existingIds.has(exercise.id) && !existingNames.has(exercise.name);
+  });
+
+  return [...missingDefaultExercises, ...exercises];
+}
+
 function sanitizeExercises(exercises) {
   if (!Array.isArray(exercises)) {
     return [];
@@ -1462,14 +1607,57 @@ function sanitizeExercises(exercises) {
 
   return exercises
     .filter((exercise) => exercise && typeof exercise === "object" && typeof exercise.name === "string")
-    .map((exercise) => {
-      return {
-        id: typeof exercise.id === "string" ? exercise.id : makeId(),
-        name: exercise.name.trim() || "Exercice",
-        duration: Math.min(180, Math.max(1, Math.round(Number(exercise.duration) || 1))),
-        objective: getCriterion(exercise.objective)?.id || TRAINING_CRITERIA[0].id,
-      };
-    });
+    .map((exercise) => sanitizeExercise(exercise));
+}
+
+function sanitizeExercise(exercise) {
+  const libraryExercise = findDefaultLibraryExercise(exercise.libraryId || exercise.id, exercise.name);
+  const duration = Number(exercise.duration ?? exercise.defaultDuration ?? libraryExercise?.defaultDuration);
+
+  return {
+    id: typeof exercise.id === "string" ? exercise.id : makeId(),
+    libraryId: typeof exercise.libraryId === "string" ? exercise.libraryId : libraryExercise?.id || "",
+    name: (exercise.name || libraryExercise?.name || "Exercice").trim(),
+    duration: Math.min(180, Math.max(1, Math.round(duration || 1))),
+    defaultDuration: Math.min(180, Math.max(1, Math.round(Number(exercise.defaultDuration ?? duration ?? 1)))),
+    objective: getCriterion(exercise.objective)?.id || libraryExercise?.objective || TRAINING_CRITERIA[0].id,
+    description: (typeof exercise.description === "string" && exercise.description.trim())
+      ? exercise.description.trim()
+      : libraryExercise?.description || "",
+    diagram: typeof exercise.diagram === "string" ? exercise.diagram.trim() : libraryExercise?.diagram || "",
+    coachingPoints: normalizeCoachingPoints(exercise.coachingPoints, libraryExercise?.coachingPoints),
+  };
+}
+
+function normalizeCoachingPoints(points, fallbackPoints = []) {
+  const source = Array.isArray(points) && points.length ? points : fallbackPoints;
+  return source
+    .filter((point) => typeof point === "string" && point.trim())
+    .map((point) => point.trim());
+}
+
+function exerciseFromLibrary(exerciseId) {
+  const exercise = DEFAULT_EXERCISE_LIBRARY.find((item) => item.id === exerciseId);
+  return exerciseFromTemplate(exercise);
+}
+
+function exerciseFromTemplate(exercise) {
+  return {
+    id: makeId(),
+    libraryId: exercise.id,
+    name: exercise.name,
+    duration: exercise.defaultDuration || exercise.duration,
+    objective: exercise.objective,
+    description: exercise.description,
+    diagram: exercise.diagram || "",
+    coachingPoints: [...(exercise.coachingPoints || [])],
+  };
+}
+
+function findDefaultLibraryExercise(exerciseId, exerciseName) {
+  return DEFAULT_EXERCISE_LIBRARY.find((exercise) => {
+    return exercise.id === exerciseId || exercise.name === exerciseName;
+  });
 }
 
 function getCriterion(criterionId) {

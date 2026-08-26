@@ -31,7 +31,8 @@ body {
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
@@ -139,7 +140,8 @@ button:disabled {
 }
 
 .formation-select,
-input {
+input,
+textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
@@ -153,6 +155,14 @@ select {
   background: #fff;
   color: var(--ink);
   min-height: 42px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 104px;
+  padding: 10px 12px;
+  resize: vertical;
+  line-height: 1.35;
 }
 
 .formation-select {
@@ -723,18 +733,20 @@ select {
 }
 
 .training-view {
-  grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+  grid-template-columns: minmax(280px, 360px) minmax(340px, 1fr) minmax(300px, 420px);
   gap: 18px;
   align-items: start;
 }
 
 .training-form-panel,
+.exercise-library-panel,
 .training-sessions-panel {
   padding: 16px;
 }
 
 .training-form,
 .exercise-builder,
+.exercise-library,
 .training-sessions {
   display: grid;
   gap: 12px;
@@ -765,18 +777,25 @@ select {
 
 .exercise-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: 10px;
-  align-items: center;
+  gap: 12px;
   min-height: 52px;
   border: 1px solid rgba(22, 32, 25, 0.1);
   border-radius: 8px;
-  padding: 10px;
+  padding: 12px;
   background: #fff;
 }
 
+.exercise-row-heading,
+.library-exercise-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
 .exercise-row strong,
-.training-session-card h3 {
+.training-session-card h3,
+.library-exercise-card h3 {
   display: block;
   margin: 0;
   overflow: hidden;
@@ -789,6 +808,60 @@ select {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 900;
+}
+
+.library-exercise-card {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(25, 50, 35, 0.08);
+}
+
+.library-exercise-card p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.library-exercise-card .secondary-button {
+  width: 100%;
+}
+
+.exercise-detail {
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.exercise-detail p {
+  margin: 0;
+}
+
+.exercise-diagram {
+  margin: 0;
+  overflow-x: auto;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f3f7f0;
+  color: var(--ink);
+  font: 800 0.78rem/1.35 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+
+.coaching-points {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.coaching-points li {
+  padding-left: 2px;
 }
 
 .objective-pill {
@@ -996,6 +1069,14 @@ select {
   .details-panel {
     grid-column: 1 / -1;
   }
+
+  .training-view {
+    grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  }
+
+  .training-sessions-panel {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 760px) {
@@ -1054,8 +1135,13 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .training-sessions-panel {
+    grid-column: auto;
+  }
+
   .exercise-controls,
-  .exercise-row {
+  .exercise-row-heading,
+  .library-exercise-heading {
     grid-template-columns: 1fr;
   }
 
