@@ -1362,7 +1362,7 @@ function createOppositionPlayerCard(player, teamName = null) {
   card.innerHTML = `
     <div>
       <div class="player-name">${escapeHtml(player.name)}</div>
-      <div class="badges">${player.positions.map((position) => `<span class="badge">${position}</span>`).join("")}</div>
+      ${teamName ? "" : `<div class="badges">${player.positions.map((position) => `<span class="badge">${position}</span>`).join("")}</div>`}
     </div>
     <span class="player-card-rating">${averageRatingOutOf10(player.ratings)}</span>
     <div class="opposition-card-actions">
