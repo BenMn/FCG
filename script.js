@@ -370,8 +370,15 @@ const elements = {
   formationTitle: document.querySelector("#formationTitle"),
   formationSlots: document.querySelector("#formationSlots"),
   openPlayerModalButton: document.querySelector("#openPlayerModalButton"),
+  openExerciseModalButton: document.querySelector("#openExerciseModalButton"),
   closePlayerModalButton: document.querySelector("#closePlayerModalButton"),
   playerModal: document.querySelector("#playerModal"),
+  exerciseModal: document.querySelector("#exerciseModal"),
+  closeExerciseModalButton: document.querySelector("#closeExerciseModalButton"),
+  exerciseDetailModal: document.querySelector("#exerciseDetailModal"),
+  closeExerciseDetailButton: document.querySelector("#closeExerciseDetailButton"),
+  exerciseDetailTitle: document.querySelector("#exerciseDetailTitle"),
+  exerciseDetailContent: document.querySelector("#exerciseDetailContent"),
   slotPickerModal: document.querySelector("#slotPickerModal"),
   closeSlotPickerButton: document.querySelector("#closeSlotPickerButton"),
   slotPickerDetails: document.querySelector("#slotPickerDetails"),
@@ -389,11 +396,13 @@ const elements = {
   selectionDetails: document.querySelector("#selectionDetails"),
   sessionForm: document.querySelector("#sessionForm"),
   sessionName: document.querySelector("#sessionName"),
+  exerciseForm: document.querySelector("#exerciseForm"),
   exerciseName: document.querySelector("#exerciseName"),
   exerciseDuration: document.querySelector("#exerciseDuration"),
   exerciseObjective: document.querySelector("#exerciseObjective"),
   exerciseDescription: document.querySelector("#exerciseDescription"),
-  addExerciseButton: document.querySelector("#addExerciseButton"),
+  exerciseDiagram: document.querySelector("#exerciseDiagram"),
+  exerciseCoachingPoints: document.querySelector("#exerciseCoachingPoints"),
   draftExercises: document.querySelector("#draftExercises"),
   exerciseLibrary: document.querySelector("#exerciseLibrary"),
   exerciseLibraryCount: document.querySelector("#exerciseLibraryCount"),
@@ -462,7 +471,7 @@ function bindEvents() {
     tab.addEventListener("click", () => switchView(tab.dataset.viewTab));
   });
   elements.playerForm.addEventListener("submit", addPlayer);
-  elements.addExerciseButton.addEventListener("click", addDraftExercise);
+  elements.exerciseForm.addEventListener("submit", addExerciseToLibrary);
   elements.sessionForm.addEventListener("submit", createTrainingSession);
   elements.draftExercises.addEventListener("click", (event) => {
     const deleteButton = event.target.closest("[data-delete-draft-exercise]");
@@ -472,8 +481,15 @@ function bindEvents() {
   });
   elements.exerciseLibrary.addEventListener("click", (event) => {
     const addButton = event.target.closest("[data-add-library-exercise]");
-    if (!addButton) return;
-    addLibraryExerciseToDraft(addButton.dataset.addLibraryExercise);
+    if (addButton) {
+      addLibraryExerciseToDraft(addButton.dataset.addLibraryExercise);
+      return;
+    }
+
+    const detailButton = event.target.closest("[data-show-library-exercise]");
+    if (detailButton) {
+      openExerciseDetail(detailButton.dataset.showLibraryExercise);
+    }
   });
   elements.trainingSessions.addEventListener("click", (event) => {
     const deleteButton = event.target.closest("[data-delete-session]");
@@ -500,11 +516,24 @@ function bindEvents() {
     }
   });
   elements.openPlayerModalButton.addEventListener("click", openPlayerModal);
+  elements.openExerciseModalButton.addEventListener("click", openExerciseModal);
   elements.closePlayerModalButton.addEventListener("click", closePlayerModal);
+  elements.closeExerciseModalButton.addEventListener("click", closeExerciseModal);
+  elements.closeExerciseDetailButton.addEventListener("click", closeExerciseDetail);
   elements.closeSlotPickerButton.addEventListener("click", closeSlotPicker);
   elements.playerModal.addEventListener("click", (event) => {
     if (event.target.matches("[data-close-modal]")) {
       closePlayerModal();
+    }
+  });
+  elements.exerciseModal.addEventListener("click", (event) => {
+    if (event.target.matches("[data-close-exercise-modal]")) {
+      closeExerciseModal();
+    }
+  });
+  elements.exerciseDetailModal.addEventListener("click", (event) => {
+    if (event.target.matches("[data-close-exercise-detail]")) {
+      closeExerciseDetail();
     }
   });
   elements.slotPickerModal.addEventListener("click", (event) => {
@@ -522,6 +551,12 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && isPlayerModalOpen()) {
       closePlayerModal();
+    }
+    if (event.key === "Escape" && isExerciseModalOpen()) {
+      closeExerciseModal();
+    }
+    if (event.key === "Escape" && isExerciseDetailOpen()) {
+      closeExerciseDetail();
     }
     if (event.key === "Escape" && isSlotPickerOpen()) {
       closeSlotPicker();
@@ -614,6 +649,55 @@ function closePlayerModal() {
 
 function isPlayerModalOpen() {
   return elements.playerModal.classList.contains("is-open");
+}
+
+function openExerciseModal() {
+  elements.exerciseModal.classList.add("is-open");
+  elements.exerciseModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  elements.exerciseName.focus();
+}
+
+function closeExerciseModal() {
+  elements.exerciseModal.classList.remove("is-open");
+  elements.exerciseModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  elements.exerciseForm.reset();
+  elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
+  elements.openExerciseModalButton.focus();
+}
+
+function isExerciseModalOpen() {
+  return elements.exerciseModal.classList.contains("is-open");
+}
+
+function openExerciseDetail(exerciseId) {
+  const exercise = state.exerciseLibrary.find((item) => item.id === exerciseId);
+  if (!exercise) return;
+
+  elements.exerciseDetailTitle.textContent = exercise.name;
+  elements.exerciseDetailContent.innerHTML = `
+    <div class="exercise-detail-modal-meta">
+      <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
+      <strong>${exercise.defaultDuration || exercise.duration} min</strong>
+    </div>
+    ${exerciseDetailHtml(exercise)}
+  `;
+  elements.exerciseDetailModal.classList.add("is-open");
+  elements.exerciseDetailModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  elements.closeExerciseDetailButton.focus();
+}
+
+function closeExerciseDetail() {
+  elements.exerciseDetailModal.classList.remove("is-open");
+  elements.exerciseDetailModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  elements.exerciseDetailContent.innerHTML = "";
+}
+
+function isExerciseDetailOpen() {
+  return elements.exerciseDetailModal.classList.contains("is-open");
 }
 
 function openSlotPicker(slotIndex) {
@@ -969,32 +1053,37 @@ function addPlayer(event) {
   render();
 }
 
-function addDraftExercise() {
+function addExerciseToLibrary(event) {
+  event.preventDefault();
+
   const name = elements.exerciseName.value.trim();
   const duration = Number(elements.exerciseDuration.value);
   const objective = elements.exerciseObjective.value;
   const description = elements.exerciseDescription.value.trim();
+  const diagram = elements.exerciseDiagram.value.trim();
+  const coachingPoints = elements.exerciseCoachingPoints.value
+    .split(/\r?\n/)
+    .map((point) => point.trim())
+    .filter(Boolean);
 
   if (!name || !description || !Number.isFinite(duration) || duration < 1 || !getCriterion(objective)) {
     return;
   }
 
-  draftExercises.push({
+  state.exerciseLibrary.unshift({
     id: makeId(),
     name,
+    defaultDuration: Math.round(duration),
     duration: Math.round(duration),
     objective,
     description,
-    diagram: "",
-    coachingPoints: [],
+    diagram,
+    coachingPoints,
   });
 
-  elements.exerciseName.value = "";
-  elements.exerciseDuration.value = "";
-  elements.exerciseDescription.value = "";
-  elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
-  elements.exerciseName.focus();
-  renderDraftExercises();
+  closeExerciseModal();
+  saveState();
+  renderTraining();
 }
 
 function addLibraryExerciseToDraft(exerciseId) {
@@ -1037,8 +1126,33 @@ function renderExerciseLibrary() {
   elements.exerciseLibraryCount.textContent = state.exerciseLibrary.length;
   elements.exerciseLibrary.innerHTML = "";
 
-  state.exerciseLibrary.forEach((exercise) => {
-    elements.exerciseLibrary.append(createLibraryExerciseCard(exercise));
+  TRAINING_CRITERIA.forEach((criterion) => {
+    const exercises = state.exerciseLibrary.filter((exercise) => exercise.objective === criterion.id);
+
+    const group = document.createElement("section");
+    group.className = "exercise-library-group";
+    group.innerHTML = `
+      <div class="exercise-library-group-heading">
+        <h3>${criterion.label}</h3>
+        <span>${exercises.length}</span>
+      </div>
+    `;
+
+    const list = document.createElement("div");
+    list.className = "exercise-library-group-list";
+    if (exercises.length) {
+      exercises.forEach((exercise) => {
+        list.append(createLibraryExerciseCard(exercise));
+      });
+    } else {
+      const empty = document.createElement("p");
+      empty.className = "empty-state compact-empty-state";
+      empty.textContent = "Aucun exercice.";
+      list.append(empty);
+    }
+
+    group.append(list);
+    elements.exerciseLibrary.append(group);
   });
 }
 
@@ -1099,9 +1213,10 @@ function createLibraryExerciseCard(exercise) {
           <h3>${escapeHtml(exercise.name)}</h3>
           <p>${exercise.defaultDuration || exercise.duration} min</p>
         </div>
-        <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
+        <button class="icon-button exercise-view-button" type="button" title="Voir le détail" aria-label="Voir le détail de ${escapeHtml(exercise.name)}" data-show-library-exercise="${exercise.id}">
+          <span class="eye-icon" aria-hidden="true"></span>
+        </button>
       </div>
-      ${exerciseDetailHtml(exercise)}
       <button class="secondary-button" type="button" data-add-library-exercise="${exercise.id}">Ajouter à la séance</button>
     </article>
   `.trim();
@@ -1125,7 +1240,6 @@ function exerciseRowHtml(exercise, canDelete = false) {
         <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
         ${canDelete ? `<button class="icon-button exercise-delete-button" type="button" title="Retirer l'exercice" aria-label="Retirer l'exercice" data-delete-draft-exercise="${exercise.id}">×</button>` : ""}
       </div>
-      ${exerciseDetailHtml(exercise)}
     </article>
   `;
 }

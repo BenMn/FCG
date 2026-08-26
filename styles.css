@@ -733,7 +733,7 @@ textarea {
 }
 
 .training-view {
-  grid-template-columns: minmax(280px, 360px) minmax(340px, 1fr) minmax(300px, 420px);
+  grid-template-columns: minmax(260px, 320px) minmax(380px, 1fr) minmax(280px, 360px);
   gap: 18px;
   align-items: start;
 }
@@ -745,7 +745,6 @@ textarea {
 }
 
 .training-form,
-.exercise-builder,
 .exercise-library,
 .training-sessions {
   display: grid;
@@ -753,15 +752,9 @@ textarea {
 }
 
 .training-form .primary-button,
-.exercise-builder .secondary-button {
+.exercise-form .primary-button,
+.exercise-form .secondary-button {
   width: 100%;
-}
-
-.exercise-builder {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 12px;
-  background: #f8faf3;
 }
 
 .exercise-controls {
@@ -777,11 +770,10 @@ textarea {
 
 .exercise-row {
   display: grid;
-  gap: 12px;
   min-height: 52px;
   border: 1px solid rgba(22, 32, 25, 0.1);
   border-radius: 8px;
-  padding: 12px;
+  padding: 10px;
   background: #fff;
 }
 
@@ -791,6 +783,14 @@ textarea {
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 10px;
   align-items: center;
+}
+
+.exercise-row-heading {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.library-exercise-heading {
+  grid-template-columns: minmax(0, 1fr) 38px;
 }
 
 .exercise-row strong,
@@ -810,12 +810,42 @@ textarea {
   font-weight: 900;
 }
 
+.exercise-library-group {
+  display: grid;
+  gap: 8px;
+}
+
+.exercise-library-group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+}
+
+.exercise-library-group-heading h3 {
+  margin: 0;
+  font-size: 0.84rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.exercise-library-group-heading span {
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.exercise-library-group-list {
+  display: grid;
+  gap: 8px;
+}
+
 .library-exercise-card {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 14px;
+  padding: 10px;
   background: #fff;
   box-shadow: 0 8px 18px rgba(25, 50, 35, 0.08);
 }
@@ -829,6 +859,9 @@ textarea {
 
 .library-exercise-card .secondary-button {
   width: 100%;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 0.82rem;
 }
 
 .exercise-detail {
@@ -862,6 +895,66 @@ textarea {
 
 .coaching-points li {
   padding-left: 2px;
+}
+
+.exercise-view-button {
+  width: 38px;
+  min-height: 38px;
+  background: #eef3ee;
+  color: var(--ink);
+}
+
+.eye-icon {
+  position: relative;
+  display: block;
+  width: 19px;
+  height: 12px;
+  margin: 0 auto;
+  border: 2px solid currentColor;
+  border-radius: 999px 999px 999px 999px / 75% 75% 75% 75%;
+}
+
+.eye-icon::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  aspect-ratio: 1;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.exercise-form {
+  display: grid;
+  gap: 8px;
+}
+
+.exercise-form textarea {
+  height: 54px;
+  min-height: 54px;
+}
+
+#exerciseDescription {
+  height: 70px;
+  min-height: 70px;
+}
+
+.exercise-modal-dialog,
+.exercise-detail-dialog {
+  width: min(720px, 100%);
+}
+
+.exercise-detail-modal-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.exercise-detail-modal-meta strong {
+  color: var(--ink);
 }
 
 .objective-pill {
@@ -1007,11 +1100,13 @@ textarea {
 .modal-backdrop {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: rgba(22, 32, 25, 0.48);
 }
 
 .modal-dialog {
   position: relative;
+  z-index: 1;
   width: min(480px, 100%);
   max-height: min(760px, 92vh);
   overflow: auto;
@@ -1030,14 +1125,21 @@ textarea {
   margin-bottom: 16px;
 }
 
+.modal-heading > div {
+  min-width: 0;
+}
+
 .modal-heading h2 {
   margin: 0;
   font-size: 1.55rem;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .modal-close-button {
   flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .modal-actions {
@@ -1059,6 +1161,14 @@ textarea {
   color: var(--muted);
   font-size: 0.94rem;
   line-height: 1.45;
+}
+
+.compact-empty-state {
+  margin: 0;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 0.82rem;
 }
 
 @media (max-width: 1100px) {

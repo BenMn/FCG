@@ -15,6 +15,7 @@
         </div>
         <div class="topbar-actions">
           <button id="openPlayerModalButton" class="primary-button topbar-add-button" type="button">Ajouter un joueur</button>
+          <button id="openExerciseModalButton" class="secondary-button topbar-add-button" type="button">Ajouter exercice</button>
           <label class="select-label" for="formatSelect" data-lineup-control>Format</label>
           <select id="formatSelect" class="formation-select format-select" data-lineup-control>
             <option value="11">Foot à 11</option>
@@ -90,51 +91,6 @@
       </main>
 
       <main id="trainingView" class="training-view app-view" aria-labelledby="trainingTitle">
-        <section class="panel training-form-panel" aria-labelledby="trainingTitle">
-          <div class="panel-heading">
-            <div>
-              <p class="eyebrow">Entraînement</p>
-              <h2 id="trainingTitle">Nouvelle séance</h2>
-            </div>
-          </div>
-
-          <form id="sessionForm" class="training-form">
-            <div class="form-row">
-              <label for="sessionName">Nom de la séance</label>
-              <input id="sessionName" name="sessionName" type="text" placeholder="Ex: Mardi - conservation" autocomplete="off" required>
-            </div>
-
-            <div class="exercise-builder">
-              <div class="form-row">
-                <label for="exerciseName">Exercice</label>
-                <input id="exerciseName" name="exerciseName" type="text" placeholder="Ex: Toro 5v2" autocomplete="off">
-              </div>
-
-              <div class="exercise-controls">
-                <div class="form-row">
-                  <label for="exerciseDuration">Durée</label>
-                  <input id="exerciseDuration" name="exerciseDuration" type="number" min="1" max="180" step="1" placeholder="min">
-                </div>
-                <div class="form-row">
-                  <label for="exerciseObjective">Objectif</label>
-                  <select id="exerciseObjective" name="exerciseObjective" class="formation-select"></select>
-                </div>
-              </div>
-
-              <div class="form-row">
-                <label for="exerciseDescription">Description</label>
-                <textarea id="exerciseDescription" name="exerciseDescription" rows="4" placeholder="Organisation, consignes, variantes..." required></textarea>
-              </div>
-
-              <button id="addExerciseButton" class="secondary-button" type="button">Ajouter l'exercice</button>
-            </div>
-
-            <div id="draftExercises" class="exercise-list"></div>
-
-            <button class="primary-button" type="submit">Créer la séance</button>
-          </form>
-        </section>
-
         <section class="panel exercise-library-panel" aria-labelledby="exerciseLibraryTitle">
           <div class="panel-heading">
             <div>
@@ -144,6 +100,26 @@
             <span id="exerciseLibraryCount" class="count-pill">0</span>
           </div>
           <div id="exerciseLibrary" class="exercise-library"></div>
+        </section>
+
+        <section class="panel training-form-panel" aria-labelledby="trainingTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Entraînement</p>
+              <h2 id="trainingTitle">Séance du jour</h2>
+            </div>
+          </div>
+
+          <form id="sessionForm" class="training-form">
+            <div class="form-row">
+              <label for="sessionName">Nom de la séance</label>
+              <input id="sessionName" name="sessionName" type="text" placeholder="Ex: Mardi - conservation" autocomplete="off" required>
+            </div>
+
+            <div id="draftExercises" class="exercise-list"></div>
+
+            <button class="primary-button" type="submit">Créer la séance</button>
+          </form>
         </section>
 
         <section class="panel training-sessions-panel" aria-labelledby="sessionsTitle">
@@ -188,6 +164,71 @@
             <button class="primary-button" type="submit">Ajouter</button>
           </div>
         </form>
+      </section>
+    </div>
+
+    <div id="exerciseModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-exercise-modal></div>
+      <section class="modal-dialog exercise-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="exerciseModalTitle">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">Bibliothèque</p>
+            <h2 id="exerciseModalTitle">Nouvel exercice</h2>
+          </div>
+          <button id="closeExerciseModalButton" class="icon-button modal-close-button" type="button" title="Fermer" aria-label="Fermer">×</button>
+        </div>
+
+        <form id="exerciseForm" class="exercise-form">
+          <div class="form-row">
+            <label for="exerciseName">Exercice</label>
+            <input id="exerciseName" name="exerciseName" type="text" placeholder="Ex: Toro 5v2" autocomplete="off" required>
+          </div>
+
+          <div class="exercise-controls">
+            <div class="form-row">
+              <label for="exerciseDuration">Durée</label>
+              <input id="exerciseDuration" name="exerciseDuration" type="number" min="1" max="180" step="1" placeholder="min" required>
+            </div>
+            <div class="form-row">
+              <label for="exerciseObjective">Objectif</label>
+              <select id="exerciseObjective" name="exerciseObjective" class="formation-select"></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="exerciseDescription">Description</label>
+            <textarea id="exerciseDescription" name="exerciseDescription" rows="5" placeholder="Organisation, consignes, variantes..." required></textarea>
+          </div>
+
+          <div class="form-row">
+            <label for="exerciseDiagram">Schéma</label>
+            <textarea id="exerciseDiagram" name="exerciseDiagram" rows="4" placeholder="Optionnel"></textarea>
+          </div>
+
+          <div class="form-row">
+            <label for="exerciseCoachingPoints">Points de coaching</label>
+            <textarea id="exerciseCoachingPoints" name="exerciseCoachingPoints" rows="4" placeholder="Un point par ligne"></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button class="secondary-button" type="button" data-close-exercise-modal>Annuler</button>
+            <button class="primary-button" type="submit">Ajouter</button>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div id="exerciseDetailModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-exercise-detail></div>
+      <section class="modal-dialog exercise-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="exerciseDetailTitle">
+        <div class="modal-heading">
+          <div>
+            <p class="eyebrow">Exercice</p>
+            <h2 id="exerciseDetailTitle">Détail</h2>
+          </div>
+          <button id="closeExerciseDetailButton" class="icon-button modal-close-button" type="button" title="Fermer" aria-label="Fermer">×</button>
+        </div>
+        <div id="exerciseDetailContent"></div>
       </section>
     </div>
 
