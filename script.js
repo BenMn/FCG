@@ -22,8 +22,8 @@ const TRAINING_CRITERIA = [
 ];
 
 const DEFAULT_RATING = 3;
-const TRAINING_SESSION_TARGET_MINUTES = 105;
-const DEFAULT_TRAINING_SEED_VERSION = 2;
+const TRAINING_SESSION_TARGET_MINUTES = 90;
+const DEFAULT_TRAINING_SEED_VERSION = 3;
 
 const FORMATIONS = {
   "4-2-3-1": [
@@ -189,6 +189,8 @@ const TEAM_FORMATS = {
   "7": { label: "Foot à 7", totalPlayers: 7, defaultFormation: "2-3-1" },
   "5": { label: "Foot à 5", totalPlayers: 5, defaultFormation: "1-2-1" },
 };
+
+const OPPOSITION_FORMATS = ["4", "5", "6", "7"];
 
 const BASE_FORMATIONS = {
   "11": FORMATIONS,
@@ -555,8 +557,8 @@ const DEFAULT_SESSIONS = [
       exerciseFromLibrary("rondo-4v1-5v2", 12),
       exerciseFromLibrary("conservation-4v4-jokers", 12),
       exerciseFromLibrary("transition-hydratation-equipes", 3),
-      exerciseFromLibrary("opposition-premiere-mi-temps", 30),
-      exerciseFromLibrary("opposition-deuxieme-mi-temps", 30),
+      exerciseFromLibrary("opposition-premiere-mi-temps", 22),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps", 23),
     ],
   },
   {
@@ -569,8 +571,8 @@ const DEFAULT_SESSIONS = [
       exerciseFromLibrary("deux-vs-un-but", 12),
       exerciseFromLibrary("passe-remise-frappe", 12),
       exerciseFromLibrary("transition-hydratation-equipes", 3),
-      exerciseFromLibrary("opposition-premiere-mi-temps", 30),
-      exerciseFromLibrary("opposition-deuxieme-mi-temps", 30),
+      exerciseFromLibrary("opposition-premiere-mi-temps", 22),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps", 23),
     ],
   },
   {
@@ -583,8 +585,8 @@ const DEFAULT_SESSIONS = [
       exerciseFromLibrary("conservation-4v4-jokers", 12),
       exerciseFromLibrary("match-reduit-regle", 12),
       exerciseFromLibrary("transition-hydratation-equipes", 3),
-      exerciseFromLibrary("opposition-premiere-mi-temps", 30),
-      exerciseFromLibrary("opposition-deuxieme-mi-temps", 30),
+      exerciseFromLibrary("opposition-premiere-mi-temps", 22),
+      exerciseFromLibrary("opposition-deuxieme-mi-temps", 23),
     ],
   },
 ];
@@ -604,6 +606,7 @@ const elements = {
   viewTabs: document.querySelectorAll("[data-view-tab]"),
   lineupView: document.querySelector("#lineupView"),
   trainingView: document.querySelector("#trainingView"),
+  oppositionView: document.querySelector("#oppositionView"),
   formatSelect: document.querySelector("#formatSelect"),
   formationSelect: document.querySelector("#formationSelect"),
   formationTitle: document.querySelector("#formationTitle"),
@@ -644,6 +647,7 @@ const elements = {
   exerciseDuration: document.querySelector("#exerciseDuration"),
   exerciseObjective: document.querySelector("#exerciseObjective"),
   exerciseWarmup: document.querySelector("#exerciseWarmup"),
+  exercisePlayers: document.querySelector("#exercisePlayers"),
   exerciseDescription: document.querySelector("#exerciseDescription"),
   exerciseDiagram: document.querySelector("#exerciseDiagram"),
   exerciseCoachingPoints: document.querySelector("#exerciseCoachingPoints"),
@@ -653,6 +657,20 @@ const elements = {
   exerciseLibraryCount: document.querySelector("#exerciseLibraryCount"),
   trainingSessions: document.querySelector("#trainingSessions"),
   sessionCount: document.querySelector("#sessionCount"),
+  oppositionFormatSelect: document.querySelector("#oppositionFormatSelect"),
+  oppositionPresentPlayers: document.querySelector("#oppositionPresentPlayers"),
+  oppositionPresentCount: document.querySelector("#oppositionPresentCount"),
+  oppositionAvailablePlayers: document.querySelector("#oppositionAvailablePlayers"),
+  oppositionAvailableCount: document.querySelector("#oppositionAvailableCount"),
+  oppositionTeamA: document.querySelector("#oppositionTeamA"),
+  oppositionTeamB: document.querySelector("#oppositionTeamB"),
+  oppositionTeamAPlayers: document.querySelector("#oppositionTeamAPlayers"),
+  oppositionTeamBPlayers: document.querySelector("#oppositionTeamBPlayers"),
+  oppositionTeamACount: document.querySelector("#oppositionTeamACount"),
+  oppositionTeamBCount: document.querySelector("#oppositionTeamBCount"),
+  oppositionTeamARating: document.querySelector("#oppositionTeamARating"),
+  oppositionTeamBRating: document.querySelector("#oppositionTeamBRating"),
+  oppositionTargets: document.querySelectorAll("[data-opposition-target]"),
 };
 
 init();
@@ -672,6 +690,7 @@ function loadState() {
     teamSize: "11",
     formation: "4-4-2",
     lineups: {},
+    opposition: defaultOppositionState(),
     exerciseLibrary: DEFAULT_EXERCISE_LIBRARY,
     deletedDefaultExerciseIds: [],
     sessions: DEFAULT_SESSIONS,
@@ -694,21 +713,23 @@ function loadState() {
     const deletedDefaultExerciseIds = sanitizeDeletedDefaultExerciseIds(parsed.deletedDefaultExerciseIds);
     const exerciseLibrary = seedDefaultExerciseLibrary(
       sanitizeExerciseLibrary(parsed.exerciseLibrary),
-      deletedDefaultExerciseIds,
-      trainingSeedVersion < DEFAULT_TRAINING_SEED_VERSION
+      deletedDefaultExerciseIds
     );
     const sessions = Array.isArray(parsed.sessions) ? sanitizeSessions(parsed.sessions) : [];
     const seededSessions = trainingSeedVersion >= DEFAULT_TRAINING_SEED_VERSION ? sessions : seedDefaultSessions(sessions);
 
+    const players = sanitizePlayers(parsed.players, fallback.players);
+
     return {
-      players: sanitizePlayers(parsed.players, fallback.players),
+      players,
       teamSize,
       formation,
       lineups: sanitizeLineups(parsed.lineups),
+      opposition: sanitizeOpposition(parsed.opposition, players),
       exerciseLibrary,
       deletedDefaultExerciseIds,
       sessions: seededSessions,
-      activeView: parsed.activeView === "training" ? "training" : fallback.activeView,
+      activeView: ["training", "opposition"].includes(parsed.activeView) ? parsed.activeView : fallback.activeView,
       defaultTrainingSeeded: true,
       defaultTrainingSeedVersion: DEFAULT_TRAINING_SEED_VERSION,
     };
@@ -734,6 +755,11 @@ function bindEvents() {
     if (!deleteButton) return;
     draftExercises = draftExercises.filter((exercise) => exercise.id !== deleteButton.dataset.deleteDraftExercise);
     renderDraftExercises();
+  });
+  elements.draftExercises.addEventListener("input", (event) => {
+    const durationInput = event.target.closest("[data-draft-duration]");
+    if (!durationInput) return;
+    updateDraftExerciseDuration(durationInput.dataset.draftDuration, durationInput.value);
   });
   elements.exerciseLibrary.addEventListener("click", (event) => {
     const addButton = event.target.closest("[data-add-library-exercise]");
@@ -774,6 +800,44 @@ function bindEvents() {
     }
     saveState();
     renderTraining();
+  });
+  elements.oppositionFormatSelect.addEventListener("change", () => {
+    state.opposition.format = OPPOSITION_FORMATS.includes(elements.oppositionFormatSelect.value)
+      ? elements.oppositionFormatSelect.value
+      : OPPOSITION_FORMATS[0];
+    trimOppositionTeams();
+    saveState();
+    renderOpposition();
+  });
+  elements.oppositionPresentPlayers.addEventListener("change", (event) => {
+    const checkbox = event.target.closest("[data-opposition-present]");
+    if (!checkbox) return;
+    setOppositionPresence(checkbox.dataset.oppositionPresent, checkbox.checked);
+  });
+  elements.oppositionAvailablePlayers.addEventListener("click", (event) => {
+    const teamButton = event.target.closest("[data-add-opposition-team]");
+    if (!teamButton) return;
+    assignOppositionPlayer(teamButton.dataset.playerId, teamButton.dataset.addOppositionTeam);
+  });
+  elements.oppositionTeamAPlayers.addEventListener("click", handleOppositionTeamClick);
+  elements.oppositionTeamBPlayers.addEventListener("click", handleOppositionTeamClick);
+  [elements.oppositionTeamA, elements.oppositionTeamB].forEach((team) => {
+    team.addEventListener("dragover", allowDrop);
+    team.addEventListener("dragleave", () => team.classList.remove("drag-over"));
+    team.addEventListener("drop", (event) => {
+      event.preventDefault();
+      team.classList.remove("drag-over");
+      assignOppositionPlayer(getDraggedPlayerId(event), team.dataset.oppositionTeam);
+    });
+  });
+  elements.oppositionAvailablePlayers.addEventListener("dragover", allowDrop);
+  elements.oppositionAvailablePlayers.addEventListener("dragleave", () => {
+    elements.oppositionAvailablePlayers.classList.remove("drag-over");
+  });
+  elements.oppositionAvailablePlayers.addEventListener("drop", (event) => {
+    event.preventDefault();
+    elements.oppositionAvailablePlayers.classList.remove("drag-over");
+    removeOppositionPlayerFromTeams(getDraggedPlayerId(event));
   });
   elements.selectionDetails.addEventListener("submit", updateSelectedPlayer);
   elements.selectionDetails.addEventListener("click", (event) => {
@@ -941,12 +1005,14 @@ function openExerciseModal(exerciseId = null) {
     elements.exerciseDuration.value = exercise.defaultDuration || exercise.duration;
     elements.exerciseObjective.value = exercise.objective;
     elements.exerciseWarmup.value = sanitizeWarmup(exercise.warmup);
+    elements.exercisePlayers.value = exercise.players || "";
     elements.exerciseDescription.value = exercise.description;
     elements.exerciseDiagram.value = exercise.diagram || "";
     elements.exerciseCoachingPoints.value = (exercise.coachingPoints || []).join("\n");
   } else {
     elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
     elements.exerciseWarmup.value = "no";
+    elements.exercisePlayers.value = "";
   }
 
   elements.exerciseModal.classList.add("is-open");
@@ -965,6 +1031,7 @@ function closeExerciseModal() {
   elements.saveExerciseButton.textContent = "Ajouter";
   elements.exerciseObjective.value = TRAINING_CRITERIA[0].id;
   elements.exerciseWarmup.value = "no";
+  elements.exercisePlayers.value = "";
   elements.openExerciseModalButton.focus();
 }
 
@@ -1078,21 +1145,25 @@ function render() {
   renderAvailablePlayers();
   renderSelection();
   renderTraining();
+  renderOpposition();
   updateCounts();
   saveState();
 }
 
 function switchView(view) {
-  state.activeView = view === "training" ? "training" : "lineup";
+  state.activeView = ["training", "opposition"].includes(view) ? view : "lineup";
   saveState();
   render();
 }
 
 function updateActiveView() {
   const isTraining = state.activeView === "training";
+  const isOpposition = state.activeView === "opposition";
   document.body.classList.toggle("is-training-view", isTraining);
-  elements.lineupView.classList.toggle("is-active", !isTraining);
+  document.body.classList.toggle("is-opposition-view", isOpposition);
+  elements.lineupView.classList.toggle("is-active", !isTraining && !isOpposition);
   elements.trainingView.classList.toggle("is-active", isTraining);
+  elements.oppositionView.classList.toggle("is-active", isOpposition);
 
   elements.viewTabs.forEach((tab) => {
     const isActive = tab.dataset.viewTab === state.activeView;
@@ -1170,6 +1241,222 @@ function renderAvailablePlayers() {
   available.forEach((player) => {
     elements.availablePlayers.append(createPlayerCard(player));
   });
+}
+
+function renderOpposition() {
+  const format = oppositionTeamSize();
+  elements.oppositionFormatSelect.value = state.opposition.format;
+  elements.oppositionTargets.forEach((target) => {
+    target.textContent = format;
+  });
+  trimOppositionTeams();
+  renderOppositionPresence();
+  renderOppositionTeams();
+  renderOppositionAvailablePlayers();
+}
+
+function renderOppositionPresence() {
+  const presentIds = new Set(state.opposition.presentPlayerIds);
+  const players = [...state.players].sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  elements.oppositionPresentCount.textContent = presentIds.size;
+  elements.oppositionPresentPlayers.innerHTML = "";
+
+  if (!players.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Ajoutez d'abord des joueurs dans l'effectif.";
+    elements.oppositionPresentPlayers.append(empty);
+    return;
+  }
+
+  players.forEach((player) => {
+    const label = document.createElement("label");
+    label.className = "opposition-presence-card";
+    label.innerHTML = `
+      <input type="checkbox" ${presentIds.has(player.id) ? "checked" : ""} data-opposition-present="${player.id}">
+      <span>
+        <strong>${escapeHtml(player.name)}</strong>
+        <span>${player.positions.join(" · ")}</span>
+      </span>
+      <em>${averageRatingOutOf10(player.ratings)}</em>
+    `;
+    elements.oppositionPresentPlayers.append(label);
+  });
+}
+
+function renderOppositionTeams() {
+  const teamA = oppositionTeamPlayers("A");
+  const teamB = oppositionTeamPlayers("B");
+
+  elements.oppositionTeamACount.textContent = teamA.length;
+  elements.oppositionTeamBCount.textContent = teamB.length;
+  elements.oppositionTeamARating.textContent = teamRatingTotal(teamA);
+  elements.oppositionTeamBRating.textContent = teamRatingTotal(teamB);
+  elements.oppositionTeamAPlayers.innerHTML = "";
+  elements.oppositionTeamBPlayers.innerHTML = "";
+
+  renderOppositionTeamList(elements.oppositionTeamAPlayers, teamA, "A");
+  renderOppositionTeamList(elements.oppositionTeamBPlayers, teamB, "B");
+}
+
+function renderOppositionTeamList(container, players, teamName) {
+  if (!players.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state compact-empty-state";
+    empty.textContent = "Glissez ou ajoutez un joueur.";
+    container.append(empty);
+    return;
+  }
+
+  players.forEach((player) => {
+    container.append(createOppositionPlayerCard(player, teamName));
+  });
+}
+
+function renderOppositionAvailablePlayers() {
+  const assignedIds = new Set([...state.opposition.teams.A, ...state.opposition.teams.B]);
+  const players = state.players
+    .filter((player) => state.opposition.presentPlayerIds.includes(player.id) && !assignedIds.has(player.id))
+    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+
+  elements.oppositionAvailableCount.textContent = players.length;
+  elements.oppositionAvailablePlayers.innerHTML = "";
+
+  if (!state.opposition.presentPlayerIds.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Cochez d'abord les joueurs présents.";
+    elements.oppositionAvailablePlayers.append(empty);
+    return;
+  }
+
+  if (!players.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Tous les joueurs présents sont répartis.";
+    elements.oppositionAvailablePlayers.append(empty);
+    return;
+  }
+
+  players.forEach((player) => {
+    elements.oppositionAvailablePlayers.append(createOppositionPlayerCard(player));
+  });
+}
+
+function createOppositionPlayerCard(player, teamName = null) {
+  const card = document.createElement("article");
+  const targetTeam = teamName === "A" ? "B" : "A";
+  card.className = "player-card opposition-player-card";
+  card.draggable = true;
+  card.dataset.playerId = player.id;
+  card.addEventListener("dragstart", (event) => {
+    draggedPlayerId = player.id;
+    event.dataTransfer.setData("text/plain", player.id);
+    event.dataTransfer.effectAllowed = "move";
+  });
+  card.addEventListener("dragend", () => {
+    draggedPlayerId = null;
+    document.querySelectorAll(".drag-over").forEach((item) => item.classList.remove("drag-over"));
+  });
+  enablePointerDrag(card, player.id);
+  card.innerHTML = `
+    <div>
+      <div class="player-name">${escapeHtml(player.name)}</div>
+      <div class="badges">${player.positions.map((position) => `<span class="badge">${position}</span>`).join("")}</div>
+    </div>
+    <span class="player-card-rating">${averageRatingOutOf10(player.ratings)}</span>
+    <div class="opposition-card-actions">
+      ${teamName
+        ? `<button class="secondary-button" type="button" data-move-opposition-team="${targetTeam}" data-player-id="${player.id}">Équipe ${targetTeam}</button>
+           <button class="secondary-button" type="button" data-remove-opposition-player="${player.id}">Retirer</button>`
+        : `<button class="secondary-button" type="button" data-add-opposition-team="A" data-player-id="${player.id}">A</button>
+           <button class="secondary-button" type="button" data-add-opposition-team="B" data-player-id="${player.id}">B</button>`}
+    </div>
+  `;
+  return card;
+}
+
+function handleOppositionTeamClick(event) {
+  const removeButton = event.target.closest("[data-remove-opposition-player]");
+  if (removeButton) {
+    removeOppositionPlayerFromTeams(removeButton.dataset.removeOppositionPlayer);
+    return;
+  }
+
+  const moveButton = event.target.closest("[data-move-opposition-team]");
+  if (moveButton) {
+    assignOppositionPlayer(moveButton.dataset.playerId, moveButton.dataset.moveOppositionTeam);
+  }
+}
+
+function setOppositionPresence(playerId, isPresent) {
+  if (!findPlayer(playerId)) return;
+
+  if (isPresent) {
+    state.opposition.presentPlayerIds = [...new Set([...state.opposition.presentPlayerIds, playerId])];
+  } else {
+    state.opposition.presentPlayerIds = state.opposition.presentPlayerIds.filter((id) => id !== playerId);
+    removeOppositionPlayerFromTeams(playerId, false);
+  }
+
+  saveState();
+  renderOpposition();
+}
+
+function assignOppositionPlayer(playerId, teamName) {
+  if (!findPlayer(playerId) || !["A", "B"].includes(teamName)) return;
+  if (!state.opposition.presentPlayerIds.includes(playerId)) {
+    state.opposition.presentPlayerIds.push(playerId);
+  }
+
+  const team = state.opposition.teams[teamName];
+  const otherTeamName = teamName === "A" ? "B" : "A";
+  const alreadyInTarget = team.includes(playerId);
+  if (alreadyInTarget) return;
+  if (team.length >= oppositionTeamSize()) return;
+
+  state.opposition.teams.A = state.opposition.teams.A.filter((id) => id !== playerId);
+  state.opposition.teams.B = state.opposition.teams.B.filter((id) => id !== playerId);
+  state.opposition.teams[otherTeamName] = state.opposition.teams[otherTeamName].filter((id) => id !== playerId);
+  state.opposition.teams[teamName].push(playerId);
+  saveState();
+  renderOpposition();
+}
+
+function removeOppositionPlayerFromTeams(playerId, shouldRender = true) {
+  state.opposition.teams.A = state.opposition.teams.A.filter((id) => id !== playerId);
+  state.opposition.teams.B = state.opposition.teams.B.filter((id) => id !== playerId);
+  if (shouldRender) {
+    saveState();
+    renderOpposition();
+  }
+}
+
+function trimOppositionTeams() {
+  const playerIds = new Set(state.players.map((player) => player.id));
+  const presentIds = new Set(state.opposition.presentPlayerIds.filter((id) => playerIds.has(id)));
+  const maxPlayers = oppositionTeamSize();
+  state.opposition.presentPlayerIds = [...presentIds];
+  state.opposition.teams.A = state.opposition.teams.A.filter((id) => presentIds.has(id)).slice(0, maxPlayers);
+  const teamAIds = new Set(state.opposition.teams.A);
+  state.opposition.teams.B = state.opposition.teams.B
+    .filter((id) => presentIds.has(id) && !teamAIds.has(id))
+    .slice(0, maxPlayers);
+}
+
+function oppositionTeamPlayers(teamName) {
+  return state.opposition.teams[teamName]
+    .map((playerId) => findPlayer(playerId))
+    .filter(Boolean);
+}
+
+function oppositionTeamSize() {
+  return Number(state.opposition.format) || 4;
+}
+
+function teamRatingTotal(players) {
+  const total = players.reduce((sum, player) => sum + playerRatingValueOutOf10(player.ratings), 0);
+  return formatRating(total);
 }
 
 function renderSelection() {
@@ -1362,6 +1649,7 @@ function addExerciseToLibrary(event) {
   const duration = Number(elements.exerciseDuration.value);
   const objective = elements.exerciseObjective.value;
   const warmup = sanitizeWarmup(elements.exerciseWarmup.value);
+  const players = elements.exercisePlayers.value.trim();
   const description = elements.exerciseDescription.value.trim();
   const diagram = elements.exerciseDiagram.value.trim();
   const coachingPoints = elements.exerciseCoachingPoints.value
@@ -1373,15 +1661,12 @@ function addExerciseToLibrary(event) {
     return;
   }
 
-  const currentExercise = editingExerciseId
-    ? state.exerciseLibrary.find((exercise) => exercise.id === editingExerciseId)
-    : null;
   const savedExercise = {
     id: editingExerciseId || makeId(),
     name,
     defaultDuration: Math.round(duration),
     duration: Math.round(duration),
-    players: currentExercise?.players || "",
+    players,
     objective,
     warmup,
     description,
@@ -1419,6 +1704,15 @@ function addLibraryExerciseToDraft(exerciseId) {
 
   draftExercises.push(exerciseFromTemplate(exercise));
   renderDraftExercises();
+}
+
+function updateDraftExerciseDuration(exerciseId, rawDuration) {
+  const duration = Number(rawDuration);
+  const exercise = draftExercises.find((item) => item.id === exerciseId);
+  if (!exercise || !Number.isFinite(duration)) return;
+
+  exercise.duration = Math.min(180, Math.max(1, Math.round(duration)));
+  updateDraftSessionSummary();
 }
 
 function createTrainingSession(event) {
@@ -1515,6 +1809,22 @@ function renderExerciseLibrary() {
 
 function renderDraftExercises() {
   elements.draftExercises.innerHTML = "";
+  updateDraftSessionSummary();
+
+  if (!draftExercises.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-state";
+    empty.textContent = "Ajoutez des exercices pour construire la séance.";
+    elements.draftExercises.append(empty);
+    return;
+  }
+
+  draftExercises.forEach((exercise) => {
+    elements.draftExercises.append(createExerciseRow(exercise, "draft"));
+  });
+}
+
+function updateDraftSessionSummary() {
   const totalDuration = draftDuration();
   const missingDuration = TRAINING_SESSION_TARGET_MINUTES - totalDuration;
   const isExactDuration = missingDuration === 0;
@@ -1531,18 +1841,6 @@ function renderDraftExercises() {
   elements.saveSessionButton.textContent = editingSessionId ? "Enregistrer la séance" : "Créer la séance";
   elements.saveSessionButton.disabled = !draftExercises.length || !isExactDuration;
   elements.cancelSessionEditButton.classList.toggle("is-visible", Boolean(editingSessionId));
-
-  if (!draftExercises.length) {
-    const empty = document.createElement("p");
-    empty.className = "empty-state";
-    empty.textContent = "Ajoutez des exercices pour construire la séance.";
-    elements.draftExercises.append(empty);
-    return;
-  }
-
-  draftExercises.forEach((exercise) => {
-    elements.draftExercises.append(createExerciseRow(exercise, "draft"));
-  });
 }
 
 function draftDuration() {
@@ -1581,7 +1879,7 @@ function renderTrainingSessions() {
       <div class="training-session-heading">
         <div>
           <h3>${escapeHtml(session.name)}</h3>
-          <p>${session.exercises.length} exercice${session.exercises.length > 1 ? "s" : ""} · ${formatDuration(totalDuration)} <span class="duration-status ${durationIsValid ? "is-valid" : "is-warning"}">${durationIsValid ? "1h45" : "À ajuster"}</span></p>
+          <p>${session.exercises.length} exercice${session.exercises.length > 1 ? "s" : ""} · ${formatDuration(totalDuration)} <span class="duration-status ${durationIsValid ? "is-valid" : "is-warning"}">${durationIsValid ? formatDuration(TRAINING_SESSION_TARGET_MINUTES) : "À ajuster"}</span></p>
         </div>
         <div class="session-card-actions">
           <button class="icon-button session-edit-button" type="button" title="Modifier la séance" aria-label="Modifier la séance" data-edit-session="${session.id}">
@@ -1631,12 +1929,22 @@ function createExerciseRow(exercise, mode) {
 }
 
 function exerciseRowHtml(exercise, canDelete = false) {
+  const durationContent = canDelete
+    ? `
+      <label class="duration-editor">
+        <span>Durée</span>
+        <input type="number" min="1" max="180" step="1" value="${exercise.duration}" aria-label="Durée de ${escapeHtml(exercise.name)}" data-draft-duration="${exercise.id}">
+        <small>Conseillé ${exercise.defaultDuration || exercise.duration} min</small>
+      </label>
+    `
+    : `<span>${exercise.duration} min${exercise.players ? ` · ${escapeHtml(exercise.players)}` : ""}</span>`;
+
   return `
     <article class="exercise-row">
       <div class="exercise-row-heading">
         <div>
           <strong>${escapeHtml(exercise.name)}</strong>
-          <span>${exercise.duration} min${exercise.players ? ` · ${escapeHtml(exercise.players)}` : ""}</span>
+          ${durationContent}
         </div>
         <span class="objective-pill ${exercise.objective}">${getCriterionLabel(exercise.objective)}</span>
         ${canDelete ? `<button class="icon-button exercise-delete-button" type="button" title="Retirer l'exercice" aria-label="Retirer l'exercice" data-delete-draft-exercise="${exercise.id}">×</button>` : ""}
@@ -1681,6 +1989,7 @@ function createPlayerCard(player, role = null, slotIndex = null) {
   const card = document.createElement("article");
   const isSelected = selectedPlayerId === player.id;
   const isMatch = role && player.positions.includes(role);
+  const rating = averageRatingOutOf10(player.ratings);
 
   if (role) {
     card.className = `pitch-player-card ${isSelected ? "selected" : ""} ${isMatch ? "is-match" : "is-mismatch"}`;
@@ -1715,6 +2024,7 @@ function createPlayerCard(player, role = null, slotIndex = null) {
       render();
     });
     card.innerHTML = `
+      <div class="pitch-player-rating">${rating}</div>
       <div class="pitch-player-name">${escapeHtml(player.name)}</div>
       <div class="pitch-player-role">${role}</div>
     `;
@@ -1755,6 +2065,12 @@ function createPlayerCard(player, role = null, slotIndex = null) {
   `;
   card.append(text);
 
+  const ratingBadge = document.createElement("span");
+  ratingBadge.className = "player-card-rating";
+  ratingBadge.textContent = rating;
+  ratingBadge.title = "Note moyenne";
+  card.append(ratingBadge);
+
   return card;
 }
 
@@ -1770,6 +2086,7 @@ function getDraggedPlayerId(event) {
 function enablePointerDrag(card, playerId) {
   card.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "mouse" || event.button !== 0) return;
+    if (event.target.closest("button, input, select, textarea")) return;
 
     pointerDrag = {
       playerId,
@@ -1832,6 +2149,14 @@ function enablePointerDrag(card, playerId) {
     if (target?.type === "bench") {
       movePlayerToBench(playerToMove);
     }
+
+    if (target?.type === "opposition-team") {
+      assignOppositionPlayer(playerToMove, target.teamName);
+    }
+
+    if (target?.type === "opposition-bench") {
+      removeOppositionPlayerFromTeams(playerToMove);
+    }
   });
 
   card.addEventListener("pointercancel", cleanupPointerDrag);
@@ -1885,6 +2210,23 @@ function pointerDropTargetFromPoint(clientX, clientY) {
     return {
       type: "bench",
       element: bench,
+    };
+  }
+
+  const oppositionTeam = element?.closest("[data-opposition-team]");
+  if (oppositionTeam) {
+    return {
+      type: "opposition-team",
+      element: oppositionTeam,
+      teamName: oppositionTeam.dataset.oppositionTeam,
+    };
+  }
+
+  const oppositionBench = element?.closest("#oppositionAvailablePlayers");
+  if (oppositionBench) {
+    return {
+      type: "opposition-bench",
+      element: oppositionBench,
     };
   }
 
@@ -1976,6 +2318,9 @@ function deletePlayer(playerId) {
       if (lineup[key] === playerId) delete lineup[key];
     });
   });
+  state.opposition.presentPlayerIds = state.opposition.presentPlayerIds.filter((id) => id !== playerId);
+  state.opposition.teams.A = state.opposition.teams.A.filter((id) => id !== playerId);
+  state.opposition.teams.B = state.opposition.teams.B.filter((id) => id !== playerId);
 
   if (selectedPlayerId === playerId) {
     selectedPlayerId = null;
@@ -2062,11 +2407,19 @@ function starsForRating(rating) {
 }
 
 function averageRatingOutOf10(ratings) {
+  return formatRating(playerRatingValueOutOf10(ratings));
+}
+
+function playerRatingValueOutOf10(ratings) {
   const normalizedRatings = normalizeRatings(ratings);
   const total = TRAINING_CRITERIA.reduce((sum, criterion) => sum + normalizedRatings[criterion.id], 0);
-  const averageOutOf10 = (total / TRAINING_CRITERIA.length) * 2;
-  const formattedAverage = Number.isInteger(averageOutOf10) ? String(averageOutOf10) : averageOutOf10.toFixed(1);
-  return formattedAverage.replace(".", ",");
+  return (total / TRAINING_CRITERIA.length) * 2;
+}
+
+function formatRating(rating) {
+  const roundedRating = Math.round(rating * 10) / 10;
+  const formattedRating = Number.isInteger(roundedRating) ? String(roundedRating) : roundedRating.toFixed(1);
+  return formattedRating.replace(".", ",");
 }
 
 function sanitizeLineups(lineups) {
@@ -2084,6 +2437,54 @@ function sanitizeLineups(lineups) {
     validLineups[lineupKey] = lineup;
     return validLineups;
   }, {});
+}
+
+function defaultOppositionState() {
+  return {
+    format: "4",
+    presentPlayerIds: [],
+    teams: {
+      A: [],
+      B: [],
+    },
+  };
+}
+
+function sanitizeOpposition(opposition, players) {
+  const fallback = defaultOppositionState();
+  if (!opposition || typeof opposition !== "object") {
+    return fallback;
+  }
+
+  const playerIds = new Set(players.map((player) => player.id));
+  const format = OPPOSITION_FORMATS.includes(String(opposition.format)) ? String(opposition.format) : fallback.format;
+  const presentPlayerIds = Array.isArray(opposition.presentPlayerIds)
+    ? [...new Set(opposition.presentPlayerIds.filter((playerId) => playerIds.has(playerId)))]
+    : [];
+  const presentIds = new Set(presentPlayerIds);
+  const maxPlayers = Number(format);
+  const teamA = sanitizeOppositionTeam(opposition.teams?.A, presentIds, new Set(), maxPlayers);
+  const teamAIds = new Set(teamA);
+  const teamB = sanitizeOppositionTeam(opposition.teams?.B, presentIds, teamAIds, maxPlayers);
+
+  return {
+    format,
+    presentPlayerIds,
+    teams: {
+      A: teamA,
+      B: teamB,
+    },
+  };
+}
+
+function sanitizeOppositionTeam(team, presentIds, excludedIds, maxPlayers) {
+  if (!Array.isArray(team)) {
+    return [];
+  }
+
+  return [...new Set(team)]
+    .filter((playerId) => presentIds.has(playerId) && !excludedIds.has(playerId))
+    .slice(0, maxPlayers);
 }
 
 function sanitizeSessions(sessions) {
@@ -2107,7 +2508,7 @@ function sanitizeSessions(sessions) {
 
 function normalizeSession(session) {
   if (session.name !== "Séance 1 - Contrôle, passe et disponibilité") {
-    return session;
+    return normalizeSessionTargetDuration(session);
   }
 
   const hasTransition = session.exercises.some((exercise) => {
@@ -2115,13 +2516,35 @@ function normalizeSession(session) {
   });
 
   if (hasTransition) {
-    return session;
+    return normalizeSessionTargetDuration(session);
   }
 
   const transition = exerciseFromLibrary("transition-hydratation-equipes");
   const firstOppositionIndex = session.exercises.findIndex((exercise) => exercise.name.startsWith("Opposition"));
   const insertIndex = firstOppositionIndex === -1 ? session.exercises.length : firstOppositionIndex;
   session.exercises.splice(insertIndex, 0, transition);
+  return normalizeSessionTargetDuration(session);
+}
+
+function normalizeSessionTargetDuration(session) {
+  const totalDuration = session.exercises.reduce((total, exercise) => total + exercise.duration, 0);
+  if (totalDuration !== 105 || TRAINING_SESSION_TARGET_MINUTES !== 90) {
+    return session;
+  }
+
+  const firstOpposition = session.exercises.find((exercise) => {
+    return exercise.libraryId === "opposition-premiere-mi-temps" || exercise.name === "Opposition - 1re mi-temps";
+  });
+  const secondOpposition = session.exercises.find((exercise) => {
+    return exercise.libraryId === "opposition-deuxieme-mi-temps" || exercise.name === "Opposition - 2e mi-temps";
+  });
+
+  if (!firstOpposition || !secondOpposition) {
+    return session;
+  }
+
+  firstOpposition.duration = 22;
+  secondOpposition.duration = 23;
   return session;
 }
 

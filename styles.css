@@ -129,7 +129,8 @@ button:disabled {
   display: grid;
 }
 
-.is-training-view [data-lineup-control] {
+.is-training-view [data-lineup-control],
+.is-opposition-view [data-lineup-control] {
   display: none;
 }
 
@@ -369,7 +370,7 @@ textarea {
 
 .player-card {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
   align-items: center;
   min-height: 52px;
@@ -399,7 +400,25 @@ textarea {
   border-left-color: var(--green-dark);
 }
 
+.opposition-player-card {
+  align-self: start;
+}
+
+.opposition-card-actions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.opposition-card-actions .secondary-button {
+  min-height: 32px;
+  padding: 0 8px;
+  font-size: 0.78rem;
+}
+
 .pitch-player-card {
+  position: relative;
   display: grid;
   place-items: center;
   gap: 3px;
@@ -446,6 +465,36 @@ textarea {
 .pitch-player-name {
   font-size: 0.9rem;
   font-weight: 950;
+}
+
+.player-card-rating,
+.pitch-player-rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--green-dark);
+  color: #fff;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.player-card-rating {
+  min-width: 38px;
+  height: 32px;
+  padding: 0 8px;
+  box-shadow: 0 8px 18px rgba(31, 110, 67, 0.18);
+}
+
+.pitch-player-rating {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 5px;
+  background: rgba(255, 255, 255, 0.22);
+  font-size: 0.68rem;
 }
 
 .pitch-player-role {
@@ -738,17 +787,157 @@ textarea {
   align-items: start;
 }
 
+.opposition-view {
+  grid-template-columns: minmax(250px, 310px) minmax(430px, 1fr) minmax(250px, 310px);
+  gap: 18px;
+  align-items: start;
+}
+
 .training-form-panel,
 .exercise-library-panel,
-.training-sessions-panel {
+.training-sessions-panel,
+.opposition-presence-panel,
+.opposition-bench-panel {
   padding: 16px;
 }
 
 .training-form,
 .exercise-library,
-.training-sessions {
+.training-sessions,
+.opposition-present-list,
+.opposition-available-list,
+.opposition-team-list {
   display: grid;
   gap: 12px;
+}
+
+.opposition-present-list,
+.opposition-available-list {
+  min-height: 100px;
+}
+
+.opposition-available-list.drag-over,
+.opposition-team.drag-over {
+  outline: 2px dashed var(--gold);
+  outline-offset: 5px;
+}
+
+.opposition-presence-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(25, 50, 35, 0.06);
+}
+
+.opposition-presence-card input {
+  width: 18px;
+  height: 18px;
+}
+
+.opposition-presence-card strong,
+.opposition-presence-card span span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.opposition-presence-card strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.opposition-presence-card span span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.opposition-presence-card em {
+  border-radius: 8px;
+  padding: 6px 8px;
+  background: var(--green-dark);
+  color: #fff;
+  font-size: 0.84rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.opposition-field-section {
+  min-width: 0;
+}
+
+.opposition-pitch {
+  min-height: 680px;
+}
+
+.opposition-teams {
+  position: absolute;
+  inset: 28px;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.opposition-team {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+  min-width: 0;
+  border: 2px solid rgba(255, 255, 255, 0.56);
+  border-radius: 8px;
+  padding: 12px;
+  background: rgba(18, 72, 38, 0.26);
+  backdrop-filter: blur(1px);
+}
+
+.opposition-team-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  color: #fff;
+}
+
+.opposition-team-heading h3,
+.opposition-team-heading p {
+  margin: 0;
+}
+
+.opposition-team-heading h3 {
+  font-size: 1.05rem;
+}
+
+.opposition-team-heading p {
+  margin-top: 3px;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.team-rating {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  height: 42px;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--green-dark);
+  font-size: 1.2rem;
+  font-weight: 1000;
+  box-shadow: 0 12px 24px rgba(12, 32, 20, 0.2);
+}
+
+.opposition-team-list {
+  align-content: start;
 }
 
 .training-form .primary-button,
@@ -867,6 +1056,30 @@ textarea {
   color: var(--muted);
   font-size: 0.8rem;
   font-weight: 900;
+}
+
+.duration-editor {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.duration-editor input {
+  width: 70px;
+  min-height: 34px;
+  padding: 0 8px;
+  font-weight: 950;
+}
+
+.duration-editor small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .exercise-library-group {
@@ -1307,7 +1520,15 @@ textarea {
     grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
   }
 
+  .opposition-view {
+    grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  }
+
   .training-sessions-panel {
+    grid-column: 1 / -1;
+  }
+
+  .opposition-bench-panel {
     grid-column: 1 / -1;
   }
 }
@@ -1368,6 +1589,22 @@ textarea {
     grid-template-columns: 1fr;
   }
 
+  .opposition-view {
+    grid-template-columns: 1fr;
+  }
+
+  .opposition-field-section {
+    order: 1;
+  }
+
+  .opposition-presence-panel {
+    order: 2;
+  }
+
+  .opposition-bench-panel {
+    order: 3;
+  }
+
   .training-sessions-panel {
     grid-column: auto;
   }
@@ -1397,6 +1634,16 @@ textarea {
 
   .pitch {
     min-height: 680px;
+  }
+
+  .opposition-pitch {
+    min-height: 760px;
+  }
+
+  .opposition-teams {
+    inset: 18px;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .slot {

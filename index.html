@@ -33,6 +33,7 @@
       <nav class="app-tabs" aria-label="Navigation principale">
         <button class="tab-button is-active" type="button" data-view-tab="lineup">Composition</button>
         <button class="tab-button" type="button" data-view-tab="training">Entraînement</button>
+        <button class="tab-button" type="button" data-view-tab="opposition">Opposition</button>
       </nav>
 
       <main id="lineupView" class="layout app-view is-active">
@@ -137,6 +138,79 @@
           <div id="trainingSessions" class="training-sessions"></div>
         </section>
       </main>
+
+      <main id="oppositionView" class="opposition-view app-view" aria-labelledby="oppositionTitle">
+        <section class="panel opposition-presence-panel" aria-labelledby="oppositionPresenceTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Présence</p>
+              <h2 id="oppositionPresenceTitle">Joueurs présents</h2>
+            </div>
+            <span id="oppositionPresentCount" class="count-pill">0</span>
+          </div>
+          <div id="oppositionPresentPlayers" class="opposition-present-list"></div>
+        </section>
+
+        <section class="opposition-field-section" aria-labelledby="oppositionTitle">
+          <div class="pitch-toolbar">
+            <div>
+              <p class="eyebrow">Opposition</p>
+              <h2 id="oppositionTitle">Équipes</h2>
+            </div>
+            <select id="oppositionFormatSelect" class="formation-select" aria-label="Format opposition">
+              <option value="4">4 vs 4</option>
+              <option value="5">5 vs 5</option>
+              <option value="6">6 vs 6</option>
+              <option value="7">7 vs 7</option>
+            </select>
+          </div>
+
+          <div id="oppositionPitch" class="pitch opposition-pitch" aria-live="polite">
+            <div class="pitch-lines">
+              <span class="center-circle"></span>
+              <span class="center-line"></span>
+              <span class="box box-top"></span>
+              <span class="box box-bottom"></span>
+              <span class="goal goal-top"></span>
+              <span class="goal goal-bottom"></span>
+            </div>
+            <div class="opposition-teams">
+              <article id="oppositionTeamA" class="opposition-team" data-opposition-team="A">
+                <div class="opposition-team-heading">
+                  <div>
+                    <h3>Équipe A</h3>
+                    <p><span id="oppositionTeamACount">0</span> / <span data-opposition-target>4</span></p>
+                  </div>
+                  <strong id="oppositionTeamARating" class="team-rating">0</strong>
+                </div>
+                <div id="oppositionTeamAPlayers" class="opposition-team-list"></div>
+              </article>
+
+              <article id="oppositionTeamB" class="opposition-team" data-opposition-team="B">
+                <div class="opposition-team-heading">
+                  <div>
+                    <h3>Équipe B</h3>
+                    <p><span id="oppositionTeamBCount">0</span> / <span data-opposition-target>4</span></p>
+                  </div>
+                  <strong id="oppositionTeamBRating" class="team-rating">0</strong>
+                </div>
+                <div id="oppositionTeamBPlayers" class="opposition-team-list"></div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel opposition-bench-panel" aria-labelledby="oppositionBenchTitle">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Sélection</p>
+              <h2 id="oppositionBenchTitle">À répartir</h2>
+            </div>
+            <span id="oppositionAvailableCount" class="count-pill">0</span>
+          </div>
+          <div id="oppositionAvailablePlayers" class="opposition-available-list"></div>
+        </aside>
+      </main>
     </div>
 
     <div id="playerModal" class="modal" aria-hidden="true">
@@ -206,6 +280,11 @@
               <option value="yes">Oui</option>
               <option value="after-activation">Après activation</option>
             </select>
+          </div>
+
+          <div class="form-row">
+            <label for="exercisePlayers">Joueurs</label>
+            <input id="exercisePlayers" name="exercisePlayers" type="text" placeholder="Ex: 8-12, Tous, 6+">
           </div>
 
           <div class="form-row">
