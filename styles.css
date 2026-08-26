@@ -645,6 +645,23 @@ select {
   background: #f8faf3;
 }
 
+.selection-box-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.average-rating {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #fff;
+  color: var(--green-dark);
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
 .selection-badges {
   margin-top: 10px;
 }

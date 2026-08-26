@@ -701,7 +701,10 @@ function renderSelection() {
         <div class="badges selection-badges">${favoriteBadges}</div>
       </div>
       <div class="selection-box">
-        <strong>Notes</strong>
+        <div class="selection-box-heading">
+          <strong>Notes</strong>
+          <span class="average-rating">Moy. ${averageRatingOutOf10(selected.ratings)}/10</span>
+        </div>
         <div class="rating-summary">${renderRatingSummary(selected.ratings)}</div>
       </div>
       <div class="selection-actions">
@@ -1351,6 +1354,13 @@ function clampRating(rating) {
 function starsForRating(rating) {
   const normalizedRating = clampRating(rating);
   return `${"★".repeat(normalizedRating)}${"☆".repeat(5 - normalizedRating)}`;
+}
+
+function averageRatingOutOf10(ratings) {
+  const normalizedRatings = normalizeRatings(ratings);
+  const total = TRAINING_CRITERIA.reduce((sum, criterion) => sum + normalizedRatings[criterion.id], 0);
+  const averageOutOf10 = (total / TRAINING_CRITERIA.length) * 2;
+  return Number.isInteger(averageOutOf10) ? String(averageOutOf10) : averageOutOf10.toFixed(1);
 }
 
 function sanitizeLineups(lineups) {
